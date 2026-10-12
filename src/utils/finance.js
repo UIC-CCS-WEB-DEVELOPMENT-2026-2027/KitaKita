@@ -1,6 +1,26 @@
 export const VARIABLE_CATEGORY = 'Inventory / materials'
 
-export const todayISO = () => new Date().toISOString().slice(0, 10)
+// Today's date as YYYY-MM-DD in the user's own time zone. (toISOString() is UTC,
+// which made the Date field default to "yesterday" before 8 AM in the Philippines.)
+export const todayISO = () => {
+  const d = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+// Display helpers. Entries store dates as 'YYYY-MM-DD'; build a local Date from the
+// parts so the shown day never shifts with the viewer's time zone.
+const toLocalDate = (iso) => {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d || 1)
+}
+
+export const formatDate = (iso) =>
+  toLocalDate(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+
+// 'YYYY-MM' -> "Oct 2026" (or "October 2026" when long is true)
+export const formatMonth = (key, long = false) =>
+  toLocalDate(key + '-01').toLocaleDateString(undefined, { month: long ? 'long' : 'short', year: 'numeric' })
 
 export const money = (n, cur) =>
   (n < 0 ? '-' : '') +

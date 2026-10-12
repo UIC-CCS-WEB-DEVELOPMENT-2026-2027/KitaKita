@@ -107,6 +107,6 @@ The creation of this project involved the assistance of Artificial Intelligence.
 
 ## Author
 
-Back-End Developer/Project Manager - Isaiah Smile Halik
-Back-End Developer/Front-End Developer/Asst. Project Manager - Mark Daniel Cona
-Front-End Developer/UI-Developer/Project Coordinator - Art Xenos Guadalquiver
+- Back-End Developer/Project Manager - Isaiah Smile Halik
+- Back-End Developer/Front-End Developer/Asst. Project Manager - Mark Daniel Cona
+- Front-End Developer/UI-Developer/Project Coordinator - Art Xenos Guadalquiver

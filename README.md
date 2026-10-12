@@ -28,29 +28,6 @@
 | Data | Static JSON / mock data (`src/data/`), saved in the browser's localStorage |
 | DevOps | Git and GitHub, deployed with Vercel or Netlify |
 
-## Getting Started
-
-You need [Node.js](https://nodejs.org) (LTS version) installed.
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Start the development server
-npm run dev
-```
-
-Open the `localhost` link shown in the terminal (usually `http://localhost:5173`).
-
-Other commands:
-
-```bash
-npm run build     # create a production build in dist/
-npm run preview   # preview the production build locally
-```
-
-> Do not open `index.html` directly or with Live Server. It is a React + Vite app and must be run with `npm run dev`.
-
 ## Project Structure
 
 ```
@@ -85,17 +62,6 @@ KitaKita/
 - **Runway** = cash on hand ÷ monthly net burn, using the average of the last 3 months with entries. It only appears when monthly spending is higher than monthly sales.
 - **Gross margin** = (average monthly sales − average monthly inventory/materials cost) ÷ average monthly sales.
 - **Break-even sales** = average monthly fixed costs ÷ gross margin. Fixed costs are every expense category except Inventory / materials.
-
-## Git and GitHub Workflow
-
-```bash
-git switch -c feature/your-feature     # create a branch for your work
-git add .
-git commit -m "Describe your change"
-git push -u origin feature/your-feature
-```
-
-Open a Pull Request on GitHub, get it reviewed, and merge it into `main`. Do not commit directly to `main`.
 
 ## Deployment
 

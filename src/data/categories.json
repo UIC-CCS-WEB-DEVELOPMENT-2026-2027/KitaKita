@@ -1,0 +1,4 @@
+{
+  "sale": ["Product sales", "Services", "Online orders", "Other income"],
+  "expense": ["Inventory / materials", "Rent", "Salaries", "Marketing", "Utilities", "Software", "Other"]
+}

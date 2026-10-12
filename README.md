@@ -15,6 +15,7 @@
 - **History:** view and delete entries, export everything to CSV, or reset to the sample data.
 - **Settings:** set your opening cash balance and currency symbol.
 - **Light and dark mode:** follows your device setting.
+- **Accessible and responsive:** works from small phones to desktop, with keyboard navigation, screen-reader labels, and AA colour contrast. See [`docs/UI-UX-CHANGES.md`](docs/UI-UX-CHANGES.md).
 
 > The guidance is based only on the numbers you enter. It is a starting point, not financial or tax advice.
 
@@ -58,10 +59,12 @@ KitaKita/
 ├── package.json
 ├── vite.config.js
 ├── netlify.toml
+├── docs/
+│   └── UI-UX-CHANGES.md      # UI/UX change log, design tokens, a11y checklist, test results
 └── src/
     ├── main.jsx              # app entry point
     ├── App.jsx               # state, tabs, saving to localStorage
-    ├── styles.css            # all styling
+    ├── styles.css            # all styling (design tokens at the top)
     ├── components/
     │   ├── Register.jsx      # add sales and expenses
     │   ├── Dashboard.jsx     # insights, chart, profit split

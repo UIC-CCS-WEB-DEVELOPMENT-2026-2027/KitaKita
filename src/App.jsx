@@ -38,30 +38,46 @@ export default function App() {
 
   return (
     <div className="wrap">
-      <header>
+      <a className="skip-link" href="#main">Skip to main content</a>
+
+      <header className="app-header">
         <div>
           <h1 className="brand"><span className="k1">Kita</span> <span className="k2">Kita</span></h1>
-          <small className="tag">cash register for startups</small>
+          <p className="tag">cash register for startups</p>
         </div>
-        <button className="sm" onClick={() => setShowSettings((s) => !s)}>⚙ Settings</button>
+        <button
+          type="button"
+          className="btn"
+          aria-expanded={showSettings}
+          aria-controls="settings-panel"
+          onClick={() => setShowSettings((s) => !s)}
+        >
+          <span aria-hidden="true">⚙</span> Settings
+        </button>
       </header>
 
       {showSettings && <Settings open={open} cur={cur} onChange={updateSettings} />}
 
-      <nav className="tabs">
+      <nav className="tabs" aria-label="Sections">
         {TABS.map(([id, label]) => (
-          <button key={id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>{label}</button>
+          <button key={id} type="button" aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
+            {label}
+          </button>
         ))}
       </nav>
 
-      {tab === 'reg' && <Register tx={tx} stats={stats} cur={cur} onAdd={addTx} onDelete={deleteTx} />}
-      {tab === 'dash' && <Dashboard stats={stats} cur={cur} hasData={tx.length > 0} />}
-      {tab === 'hist' && <History tx={tx} cur={cur} onDelete={deleteTx} onReset={resetSample} />}
+      <main id="main">
+        {tab === 'reg' && <Register tx={tx} stats={stats} cur={cur} onAdd={addTx} onDelete={deleteTx} />}
+        {tab === 'dash' && <Dashboard stats={stats} cur={cur} hasData={tx.length > 0} />}
+        {tab === 'hist' && <History tx={tx} cur={cur} onDelete={deleteTx} onReset={resetSample} />}
+      </main>
 
-      <p className="note">
-        Guidance is based only on the numbers you enter and is a starting point, not financial or tax advice.
-        Data is saved in this browser.
-      </p>
+      <footer>
+        <p className="note">
+          Guidance is based only on the numbers you enter and is a starting point, not financial or tax advice.
+          Data is saved in this browser.
+        </p>
+      </footer>
     </div>
   )
 }

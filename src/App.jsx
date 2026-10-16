@@ -1,20 +1,17 @@
 import { useEffect, useState } from 'react'
 import seed from './data/transactions.json'
-import Auth from './components/Auth.jsx'
 import Register from './components/Register.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import History from './components/History.jsx'
 import Settings from './components/Settings.jsx'
-import { LogOutIcon } from './components/Icons.jsx'
-import { useAuth } from './hooks/useAuth.js'
 import { computeStats } from './utils/finance.js'
 
 const KEY = 'kitakita:v1'
 const DEFAULTS = { tx: seed, open: 10000, cur: '₱' }
 
-function load(key) {
+function load() {
   try {
-    const saved = JSON.parse(localStorage.getItem(key))
+    const saved = JSON.parse(localStorage.getItem(KEY))
     if (saved && Array.isArray(saved.tx)) return saved
   } catch {}
   return DEFAULTS
@@ -22,16 +19,14 @@ function load(key) {
 
 const TABS = [['reg', 'Register'], ['dash', 'Insights'], ['hist', 'History']]
 
-// The signed-in app. Each account gets its own saved data (key includes the user id).
-function Tracker({ user, onLogout }) {
-  const storageKey = `${KEY}:${user.id}`
-  const [data, setData] = useState(() => load(storageKey))
+export default function App() {
+  const [data, setData] = useState(load)
   const [tab, setTab] = useState('reg')
   const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify(data)) } catch {}
-  }, [data, storageKey])
+    try { localStorage.setItem(KEY, JSON.stringify(data)) } catch {}
+  }, [data])
 
   const { tx, open, cur } = data
   const stats = computeStats(tx, open)
@@ -50,21 +45,15 @@ function Tracker({ user, onLogout }) {
           <h1 className="brand"><span className="k1">Kita</span> <span className="k2">Kita</span></h1>
           <p className="tag">cash register for startups</p>
         </div>
-        <div className="header-actions">
-          <span className="user-name" title={user.email}>{user.name}</span>
-          <button
-            type="button"
-            className="btn"
-            aria-expanded={showSettings}
-            aria-controls="settings-panel"
-            onClick={() => setShowSettings((s) => !s)}
-          >
-            <span aria-hidden="true">⚙</span> Settings
-          </button>
-          <button type="button" className="btn" onClick={onLogout}>
-            <LogOutIcon /> Log out
-          </button>
-        </div>
+        <button
+          type="button"
+          className="btn"
+          aria-expanded={showSettings}
+          aria-controls="settings-panel"
+          onClick={() => setShowSettings((s) => !s)}
+        >
+          <span aria-hidden="true">⚙</span> Settings
+        </button>
       </header>
 
       {showSettings && <Settings open={open} cur={cur} onChange={updateSettings} />}
@@ -91,10 +80,4 @@ function Tracker({ user, onLogout }) {
       </footer>
     </div>
   )
-}
-
-export default function App() {
-  const { user, logout } = useAuth()
-  // key={user.id} remounts the tracker if a different account signs in.
-  return user ? <Tracker key={user.id} user={user} onLogout={logout} /> : <Auth />
 }

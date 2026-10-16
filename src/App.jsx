@@ -4,7 +4,11 @@ import Register from './components/Register.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import History from './components/History.jsx'
 import Settings from './components/Settings.jsx'
-import { computeStats } from './utils/finance.js'
+import {
+  computeStats,
+  cumulativeTotalCents,
+  MAX_CUMULATIVE_TOTAL_CENTS,
+} from './utils/finance.js'
 
 const KEY = 'kitakita:v1'
 const DEFAULTS = { tx: seed, open: 10000, cur: '₱' }
@@ -31,7 +35,26 @@ export default function App() {
   const { tx, open, cur } = data
   const stats = computeStats(tx, open)
 
-  const addTx = (entry) => setData((d) => ({ ...d, tx: [...d.tx, { ...entry, id: Date.now() }] }))
+  const addTx = (entry) => {
+    const amountCents = Math.round(Number(entry.amt) * 100)
+
+    if (!Number.isSafeInteger(amountCents) || amountCents <= 0) {
+      return false
+    }
+
+    const currentCents = cumulativeTotalCents(data.tx, entry.type)
+
+    if (currentCents + amountCents > MAX_CUMULATIVE_TOTAL_CENTS) {
+      return false
+    }
+
+    setData((d) => ({
+      ...d,
+      tx: [...d.tx, { ...entry, amt: amountCents / 100, id: Date.now() }],
+    }))
+
+    return true
+  }
   const deleteTx = (id) => setData((d) => ({ ...d, tx: d.tx.filter((t) => t.id !== id) }))
   const updateSettings = (patch) => setData((d) => ({ ...d, ...patch }))
   const resetSample = () => setData(DEFAULTS)

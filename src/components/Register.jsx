@@ -1,7 +1,13 @@
 import { useRef, useState } from 'react'
 import categories from '../data/categories.json'
 import TxRow from './TxRow.jsx'
-import { money, todayISO } from '../utils/finance.js'
+import {
+  money,
+  todayISO,
+  cumulativeTotalCents,
+  MAX_CUMULATIVE_TOTAL,
+  MAX_CUMULATIVE_TOTAL_CENTS,
+} from '../utils/finance.js'
 
 export default function Register({ tx, stats, cur, onAdd, onDelete }) {
   const [kind, setKind] = useState('sale')
@@ -13,7 +19,12 @@ export default function Register({ tx, stats, cur, onAdd, onDelete }) {
   const [notice, setNotice] = useState('')
   const amountRef = useRef(null)
 
-  const pickKind = (k) => { setKind(k); setCat(categories[k][0]); setNotice('') }
+  const pickKind = (k) => {
+    setKind(k)
+    setCat(categories[k][0])
+    setError('')
+    setNotice('')
+  }
 
   const changeAmount = (value) => {
     setAmount(value)
@@ -23,15 +34,60 @@ export default function Register({ tx, stats, cur, onAdd, onDelete }) {
 
   const submit = (e) => {
     e.preventDefault()
+
     const amt = parseFloat(amount)
-    if (!(amt > 0)) {
-      // Tell the user why nothing happened, and put them back in the field.
+
+    if (!(amt > 0) || !Number.isFinite(amt)) {
       setError('Enter an amount greater than zero.')
+      setNotice('')
       amountRef.current?.focus()
       return
     }
-    const entry = { type: kind, amt: Math.round(amt * 100) / 100, desc: desc.trim(), cat, date: date || todayISO() }
-    onAdd(entry)
+
+    const amountCents = Math.round(amt * 100)
+
+    if (!Number.isSafeInteger(amountCents) || amountCents <= 0) {
+      setError('Enter a valid amount.')
+      setNotice('')
+      amountRef.current?.focus()
+      return
+    }
+
+    const currentCents = cumulativeTotalCents(tx, kind)
+
+    if (currentCents + amountCents > MAX_CUMULATIVE_TOTAL_CENTS) {
+      const remainingCents = Math.max(
+        0,
+        MAX_CUMULATIVE_TOTAL_CENTS - currentCents
+      )
+
+      setError(
+        `This transaction would exceed the cumulative ${
+          kind === 'sale' ? 'sales' : 'expenses'
+        } limit of ${money(MAX_CUMULATIVE_TOTAL, cur)}. ` +
+        `Current total: ${money(currentCents / 100, cur)}. ` +
+        `Remaining limit: ${money(remainingCents / 100, cur)}.`
+      )
+      setNotice('')
+      amountRef.current?.focus()
+      return
+    }
+
+    const entry = {
+      type: kind,
+      amt: amountCents / 100,
+      desc: desc.trim(),
+      cat,
+      date: date || todayISO(),
+    }
+
+    if (onAdd(entry) === false) {
+      setError('This transaction exceeds the cumulative limit and was not saved.')
+      setNotice('')
+      amountRef.current?.focus()
+      return
+    }
+
     setAmount('')
     setDesc('')
     setError('')
@@ -79,6 +135,7 @@ export default function Register({ tx, stats, cur, onAdd, onDelete }) {
                 type="number"
                 inputMode="decimal"
                 min="0.01"
+                max={MAX_CUMULATIVE_TOTAL}
                 step="0.01"
                 placeholder="0.00"
                 value={amount}

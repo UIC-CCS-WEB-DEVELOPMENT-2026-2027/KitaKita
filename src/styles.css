@@ -1,7 +1,7 @@
 /* ==========================================================================
    Kita Kita: styles
    One stylesheet, organised top to bottom:
-     1. Design tokens (colour, type, spacing)   4. Components
+     1. Design tokens (colour, type, spacing)   4. Components (4b: sign in / sign up)
      2. Base                                     5. Utilities + motion
      3. Layout
    Change colours/spacing in section 1 only; components read the tokens.
@@ -723,6 +723,317 @@ select {
 }
 .card .note {
   margin-bottom: 0;
+}
+
+/* 4b. Authentication ------------------------------------------------------ */
+
+/* Header: name + log out sit beside Settings and wrap on narrow phones */
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+.user-name {
+  display: none;
+  max-width: 14rem;
+  overflow: hidden;
+  color: var(--mut);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (min-width: 640px) {
+  .user-name {
+    display: inline;
+  }
+}
+
+/* Page layout: one column on phones/tablets, form + benefits side by side on desktop */
+.auth-page {
+  max-width: 460px;
+  margin: 0 auto;
+}
+.auth-layout {
+  display: grid;
+  gap: var(--sp-4);
+}
+.auth-aside {
+  display: none;
+}
+.auth-aside p {
+  margin: 0 0 var(--sp-4);
+  color: var(--mut);
+}
+.auth-aside h2 {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--sp-2);
+}
+.auth-benefits {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
+}
+.auth-benefits li {
+  display: flex;
+  gap: var(--sp-3);
+}
+.auth-benefits li::before {
+  content: "\2713";
+  color: var(--grn);
+  font-weight: 800;
+}
+.auth-note {
+  margin-top: var(--sp-3);
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .auth-page {
+    padding-top: var(--sp-5);
+  }
+}
+@media (min-width: 860px) {
+  .auth-page {
+    max-width: 920px;
+  }
+  .auth-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-5);
+    align-items: start;
+  }
+  .auth-aside {
+    display: block;
+    order: -1;
+    padding: var(--sp-5);
+  }
+}
+
+/* Log In / Sign Up switch reuses .tabs, but sits inside the card and is not sticky */
+.tabs.auth-tabs {
+  position: static;
+  margin-bottom: var(--sp-5);
+  background: var(--bg);
+  box-shadow: none;
+}
+.auth-tabs button:hover {
+  background: var(--line);
+}
+.auth-tabs button[aria-current="page"],
+.auth-tabs button[aria-current="page"]:hover {
+  background: var(--pri);
+  color: var(--on-pri);
+}
+
+.auth-title {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--sp-1);
+}
+.auth-sub {
+  margin: 0 0 var(--sp-2);
+  color: var(--mut);
+  font-size: var(--fs-sm);
+}
+.auth-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.auth-callout {
+  margin-top: var(--sp-3);
+}
+.auth-back {
+  margin-top: var(--sp-3);
+  text-align: center;
+}
+
+/* Inputs flagged invalid (the amount/password wrappers draw their own border) */
+input[aria-invalid="true"] {
+  border: 2px solid var(--red);
+}
+input[type="checkbox"][aria-invalid="true"] {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* Password field: show/hide button sits inside the box */
+.pw-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius-sm);
+}
+.pw-wrap:focus-within {
+  outline: 3px solid var(--pri);
+  outline-offset: 2px;
+}
+.pw-wrap.is-invalid {
+  border: 2px solid var(--red);
+}
+.pw-wrap input,
+.pw-wrap input[aria-invalid="true"] {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: 0;
+}
+.pw-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--mut);
+  transition: background-color 0.15s, color 0.15s;
+}
+.pw-toggle:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Checkbox rows ("Remember me", "I agree") */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 11px 0;
+  font-weight: 500;
+  cursor: pointer;
+}
+.check input {
+  flex: none;
+  width: 22px;
+  min-height: 0;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--pri);
+}
+.auth-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-2);
+}
+.auth-row .check {
+  padding: 0;
+  min-height: var(--tap);
+  align-items: center;
+}
+
+/* Text-style button ("Forgot password?", "Back to log in") */
+.link-btn {
+  min-height: var(--tap);
+  padding: 0 var(--sp-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--pri-text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-btn:hover {
+  background: var(--pri-soft);
+}
+
+/* Password strength: bar segments plus a text label */
+.strength {
+  --lvl: var(--red);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+.strength[data-level="2"] {
+  --lvl: var(--amb);
+}
+.strength[data-level="3"],
+.strength[data-level="4"] {
+  --lvl: var(--grn);
+}
+.strength-bar {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-1);
+}
+.strength-bar i {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+}
+.strength-bar i.on {
+  background: var(--lvl);
+}
+.strength-label {
+  color: var(--mut);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+/* Terms text */
+.terms-details {
+  margin-top: 0;
+}
+.terms-body {
+  max-height: 168px;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--mut);
+  font-size: var(--fs-xs);
+}
+.terms-body p {
+  margin: 0 0 var(--sp-2);
+}
+.terms-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Submit button: disabled + loading */
+.btn:disabled {
+  cursor: not-allowed;
+}
+.btn-primary:disabled,
+.btn-primary:disabled:hover {
+  background: var(--pri);
+  opacity: 0.75;
+}
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
 }
 
 /* 5. Utilities + motion -------------------------------------------------- */

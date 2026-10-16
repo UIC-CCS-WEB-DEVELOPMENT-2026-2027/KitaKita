@@ -10,7 +10,8 @@ export const LATENCY_MS = 700
 // so remove this seed before handling real accounts.
 export const ADMIN_ID = 'u_admin'
 const ADMIN_USERNAME = 'Secret123'
-const ADMIN_PASSWORD = 'Secret'
+const ADMIN_PASSWORD = '123'
+const LEGACY_ADMIN_PASSWORD = 'Secret' // earlier default; upgraded automatically below
 
 export class AuthError extends Error {
   constructor(message, field) {
@@ -97,7 +98,21 @@ export function findByIdentifier(users, key) {
 // Creates the prototype admin the first time it is needed. Safe to call repeatedly:
 // once the account exists (even after the admin edits it in Settings) it is left alone.
 export async function ensureAdminAccount() {
-  if (loadUsers().some((u) => u.id === ADMIN_ID)) return
+  const existing = loadUsers().find((u) => u.id === ADMIN_ID)
+  if (existing) {
+    // An admin still on the earlier default password is moved to the current one.
+    // An admin whose password was changed by hand is left alone.
+    if (existing.hash === (await hashPassword(LEGACY_ADMIN_PASSWORD, existing.salt))) {
+      const newSalt = makeSalt()
+      const newHash = await hashPassword(ADMIN_PASSWORD, newSalt)
+      writeStore(
+        'localStorage',
+        USERS_KEY,
+        loadUsers().map((u) => (u.id === ADMIN_ID ? { ...u, salt: newSalt, hash: newHash } : u))
+      )
+    }
+    return
+  }
   const salt = makeSalt()
   const hash = await hashPassword(ADMIN_PASSWORD, salt)
   const users = loadUsers() // re-read: another call may have finished while hashing

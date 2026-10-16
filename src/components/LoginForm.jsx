@@ -10,7 +10,7 @@ import { validators } from '../utils/validation.js'
 const FIELDS = ['email', 'password']
 
 const validate = (v) => ({
-  email: validators.email(v.email),
+  email: validators.identifier(v.email), // email OR username
   password: validators.loginPassword(v.password),
 })
 
@@ -57,13 +57,12 @@ export default function LoginForm({ headingRef, initialEmail, onForgot }) {
       <fieldset className="auth-fieldset" disabled={loading}>
         <TextField
           id="login-email"
-          label="Email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
+          label="Email or username"
+          type="text"
+          autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="you@example.com"
+          placeholder="you@example.com or username"
           error={form.error('email')}
           {...form.field('email')}
         />

@@ -17,17 +17,31 @@ export const validators = {
     if (!EMAIL_RE.test(s)) return 'Enter a valid email, like name@example.com.'
     return ''
   },
+  // Log in accepts an email or a username, so there is no email-format check here.
+  identifier: (v) => (v.trim() ? '' : 'Enter your email or username.'),
+  username: (v) => {
+    const s = v.trim()
+    if (!s) return 'Enter a username.'
+    if (s.length < 3) return 'Your username must be at least 3 characters.'
+    if (s.length > 64) return 'Your username must be 64 characters or fewer.'
+    if (/\s/.test(s)) return 'Your username cannot contain spaces.'
+    return ''
+  },
   loginPassword: (v) => (v ? '' : 'Enter your password.'),
+  currentPassword: (v) => (v ? '' : 'Enter your current password to save changes.'),
   newPassword: (v) => {
     if (!v) return 'Create a password.'
     if (v.length < MIN_PASSWORD) return `Use at least ${MIN_PASSWORD} characters. You have ${v.length}.`
     return ''
   },
+  // Account settings: leaving the new password blank means "keep my current one".
+  optionalNewPassword: (v) => (v ? validators.newPassword(v) : ''),
   confirm: (v, password) => {
     if (!v) return 'Re-enter your password to confirm it.'
     if (v !== password) return 'Passwords do not match.'
     return ''
   },
+  optionalConfirm: (v, password) => (password ? validators.confirm(v, password) : ''),
   terms: (v) => (v ? '' : 'Accept the Terms & Conditions to create an account.'),
 }
 

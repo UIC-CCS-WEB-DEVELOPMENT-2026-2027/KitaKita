@@ -6,6 +6,12 @@ export const USERS_KEY = 'kitakita:users'
 export const SESSION_KEY = 'kitakita:session'
 export const LATENCY_MS = 700
 
+// Prototype administrator (testing/demo only). Credentials are visible in source,
+// so remove this seed before handling real accounts.
+export const ADMIN_ID = 'u_admin'
+const ADMIN_USERNAME = 'Secret123'
+const ADMIN_PASSWORD = 'Secret'
+
 export class AuthError extends Error {
   constructor(message, field) {
     super(message)
@@ -68,11 +74,47 @@ export async function hashPassword(password, salt) {
   return 'fnv' + (h >>> 0).toString(16)
 }
 
-export const publicUser = ({ id, name, email }) => ({ id, name, email })
+// Older accounts have no username or role: fall back to the email and a normal user.
+export const publicUser = ({ id, name, email, username, role }) => ({
+  id,
+  name,
+  email,
+  username: username || email,
+  role: role || 'user',
+})
 
 export function loadUsers() {
   const users = readStore('localStorage', USERS_KEY)
   return Array.isArray(users) ? users : []
+}
+
+// Find an account by normalised (trimmed, lower-case) email OR username.
+export function findByIdentifier(users, key) {
+  if (!key) return undefined
+  return users.find((u) => normalizeEmail(u.username || '') === key || u.email === key)
+}
+
+// Creates the prototype admin the first time it is needed. Safe to call repeatedly:
+// once the account exists (even after the admin edits it in Settings) it is left alone.
+export async function ensureAdminAccount() {
+  if (loadUsers().some((u) => u.id === ADMIN_ID)) return
+  const salt = makeSalt()
+  const hash = await hashPassword(ADMIN_PASSWORD, salt)
+  const users = loadUsers() // re-read: another call may have finished while hashing
+  if (users.some((u) => u.id === ADMIN_ID)) return
+  writeStore('localStorage', USERS_KEY, [
+    ...users,
+    {
+      id: ADMIN_ID,
+      name: 'Administrator',
+      email: '',
+      username: ADMIN_USERNAME,
+      role: 'admin',
+      salt,
+      hash,
+      createdAt: new Date().toISOString(),
+    },
+  ])
 }
 
 // Session lives in sessionStorage (ends with the tab) unless "Remember me" was

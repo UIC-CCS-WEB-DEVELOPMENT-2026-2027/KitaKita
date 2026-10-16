@@ -1008,6 +1008,28 @@ input[type="checkbox"][aria-invalid="true"] {
   margin-bottom: 0;
 }
 
+/* Settings: account + admin sections */
+.settings-section {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+.settings-section h3 {
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+.role-badge {
+  display: inline-block;
+  margin-left: var(--sp-2);
+  padding: 2px var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: var(--pri-soft);
+  color: var(--pri-text);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
 /* Submit button: disabled + loading */
 .btn:disabled {
   cursor: not-allowed;

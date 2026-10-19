@@ -23,7 +23,7 @@ function groupByMonth(sorted) {
   return groups
 }
 
-export default function History({ tx, cur, onDelete, onReset }) {
+export default function History({ tx, cur, onDelete, onClear }) {
   const sorted = [...tx].sort((a, b) => b.date.localeCompare(a.date))
   return (
     <section className="card" aria-labelledby="history-title">
@@ -34,9 +34,9 @@ export default function History({ tx, cur, onDelete, onReset }) {
           <button
             type="button"
             className="btn btn-danger"
-            onClick={() => window.confirm('Replace your entries with the sample data?') && onReset()}
+            onClick={() => window.confirm('Delete all entries and reset opening cash to 0? This cannot be undone.') && onClear()}
           >
-            Reset sample data
+            Clear all data
           </button>
         </div>
       </div>

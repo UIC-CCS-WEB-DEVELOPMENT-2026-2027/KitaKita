@@ -12,7 +12,6 @@ import {
 } from './utils/finance.js'
 import { LogOutIcon } from './components/Icons.jsx'
 import { useAuth } from './hooks/useAuth.js'
-import { computeStats } from './utils/finance.js'
 
 const KEY = 'kitakita:v1'
 const DEFAULTS = { tx: seed, open: 10000, cur: '₱' }

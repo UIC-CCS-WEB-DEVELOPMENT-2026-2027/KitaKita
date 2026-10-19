@@ -65,7 +65,7 @@ KitaKita/
 
 ## Deployment
 
-- **Deployed on Vercel**: (https://kita-kita-9wz9gcaae-ihalik-250000000758-5824.vercel.app/)
+- **Deployed on Vercel**: (https://kita-kita-o1e12b5sk-ihalik-250000000758-5824.vercel.app/)
 - **Deployed on Netlify**: (https://visionary-palmier-2f25d1.netlify.app)
 
 Both services redeploy automatically each time `main` is updated.

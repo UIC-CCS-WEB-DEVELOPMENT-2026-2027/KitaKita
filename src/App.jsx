@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import seed from './data/transactions.json'
 import Auth from './components/Auth.jsx'
 import Register from './components/Register.jsx'
 import Dashboard from './components/Dashboard.jsx'
@@ -14,14 +13,15 @@ import { LogOutIcon } from './components/Icons.jsx'
 import { useAuth } from './hooks/useAuth.js'
 
 const KEY = 'kitakita:v1'
-const DEFAULTS = { tx: seed, open: 10000, cur: '₱' }
+// Brand-new accounts start completely empty: no entries, ₱0.00 opening cash.
+const emptyState = () => ({ tx: [], open: 0, cur: '₱' })
 
 function load(key) {
   try {
     const saved = JSON.parse(localStorage.getItem(key))
     if (saved && Array.isArray(saved.tx)) return saved
   } catch {}
-  return DEFAULTS
+  return emptyState()
 }
 
 const TABS = [['reg', 'Register'], ['dash', 'Insights'], ['hist', 'History']]
@@ -62,7 +62,7 @@ function Tracker({ user, onLogout }) {
   }
   const deleteTx = (id) => setData((d) => ({ ...d, tx: d.tx.filter((t) => t.id !== id) }))
   const updateSettings = (patch) => setData((d) => ({ ...d, ...patch }))
-  const resetSample = () => setData(DEFAULTS)
+  const clearAll = () => setData(emptyState())
 
   return (
     <div className="wrap">
@@ -103,7 +103,7 @@ function Tracker({ user, onLogout }) {
       <main id="main">
         {tab === 'reg' && <Register tx={tx} stats={stats} cur={cur} onAdd={addTx} onDelete={deleteTx} />}
         {tab === 'dash' && <Dashboard stats={stats} cur={cur} hasData={tx.length > 0} />}
-        {tab === 'hist' && <History tx={tx} cur={cur} onDelete={deleteTx} onReset={resetSample} />}
+        {tab === 'hist' && <History tx={tx} cur={cur} onDelete={deleteTx} onClear={clearAll} />}
       </main>
 
       <footer>

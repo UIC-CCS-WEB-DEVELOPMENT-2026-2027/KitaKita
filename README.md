@@ -43,16 +43,39 @@ KitaKita/
     ├── App.jsx               # state, tabs, saving to localStorage
     ├── styles.css            # all styling (design tokens at the top)
     ├── components/
-    │   ├── Register.jsx      # add sales and expenses
-    │   ├── Dashboard.jsx     # insights, chart, profit split
-    │   ├── History.jsx       # entries list, CSV export, reset
-    │   ├── Settings.jsx      # opening balance and currency
-    │   └── TxRow.jsx         # one entry row
+    │   ├── AccountSettings.jsx    # account settings page (Code provided below)
+    │   ├── Auth.jsx               # auth tab wrapper (Code provided below)
+    │   ├── Callout.jsx            # alert callout component (Code provided below)
+    │   ├── ChangePasswordForm.jsx # change password form (Code provided below)
+    │   ├── ChangeUsernameForm.jsx # change username form (Code provided below)
+    │   ├── Dashboard.jsx          # insights, chart, profit split (Code provided below)
+    │   ├── ForgotPasswordForm.jsx # forgot password form (Code provided below)
+    │   ├── History.jsx            # entries list, CSV export, reset (Code provided below)
+    │   ├── Icons.jsx              # icon SVG components (Code provided below)
+    │   ├── Loading.jsx            # loading indicator (Code provided below)
+    │   ├── Login.jsx              # login page wrapper (Code provided below)
+    │   ├── LoginForm.jsx          # login form component (Code provided below)
+    │   ├── PasswordField.jsx      # password field with toggle (Code provided below)
+    │   ├── ProtectedRoute.jsx     # auth route guard (Code provided below)
+    │   ├── Register.jsx           # add sales and expenses (Code provided below)
+    │   ├── Settings.jsx           # opening balance and currency (Code provided below)
+    │   ├── SignUpForm.jsx         # sign up form component (Code provided below)
+    │   ├── StrengthMeter.jsx      # password strength meter (Code provided below)
+    │   ├── TextField.jsx          # custom text input (Code provided below)
+    │   ├── Tracker.jsx            # main register tracker container (Code provided below)
+    │   └── TxRow.jsx              # one entry row
+    ├── context/
+    │   └── AuthContext.jsx   # authentication context provider (Code provided below)
     ├── data/
-    │   ├── transactions.json # sample (mock) transactions
-    │   └── categories.json   # sale and expense categories
+    │   ├── transactions.json # sample (mock) transactions (Code provided below)
+    │   └── categories.json   # sale and expense categories (Code provided below)
+    ├── hooks/
+    │   ├── useAuth.js        # authentication hook (Code provided below)
+    │   └── useForm.js        # form management hook (Code provided below)
     └── utils/
-        └── finance.js        # all calculations and guidance rules
+        ├── auth.js           # authentication helpers (Code provided below)
+        ├── validation.js     # input validation rules (Code provided below)
+        └── finance.js        # all calculations and guidance rules (Code provided below)
 ```
 
 ## How the Calculations Work

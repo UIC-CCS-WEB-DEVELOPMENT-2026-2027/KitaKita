@@ -1,5 +1,15 @@
 export const VARIABLE_CATEGORY = 'Inventory / materials'
 
+export const MAX_CUMULATIVE_TOTAL = 1_000_000_000
+export const MAX_CUMULATIVE_TOTAL_CENTS = MAX_CUMULATIVE_TOTAL * 100
+
+export function cumulativeTotalCents(tx, type) {
+  return tx.reduce((total, entry) => {
+    if (entry.type !== type) return total
+    return total + Math.round(Number(entry.amt) * 100)
+  }, 0)
+}
+
 // Today's date as YYYY-MM-DD in the user's own time zone. (toISOString() is UTC,
 // which made the Date field default to "yesterday" before 8 AM in the Philippines.)
 export const todayISO = () => {

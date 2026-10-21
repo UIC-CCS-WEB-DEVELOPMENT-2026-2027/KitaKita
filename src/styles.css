@@ -1076,3 +1076,38 @@ input[type="checkbox"][aria-invalid="true"] {
     transition: none !important;
   }
 }
+
+/* Weekly cash-flow budget */
+.budget-week-controls {
+  display: grid;
+  grid-template-columns: auto minmax(150px, 1fr) auto;
+  align-items: end;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+.budget-week-controls .btn { white-space: nowrap; }
+.budget-date-field { margin: 0; }
+.budget-range { margin: var(--sp-3) 0 0; color: var(--mut); font-size: var(--fs-sm); font-weight: 600; }
+.budget-starting-cash { max-width: 440px; }
+.budget-stats { margin-top: var(--sp-4); }
+.budget-projection { margin: 0; font-size: clamp(1.8rem, 7vw, 2.5rem); font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.budget-warning { margin: var(--sp-3) 0 0; padding: var(--sp-3); border-radius: var(--radius-sm); background: var(--red-bg); color: var(--red); font-weight: 700; }
+.budget-type-toggle { margin: var(--sp-3) 0 var(--sp-4); }
+.budget-form-actions { margin-top: var(--sp-4); }
+.budget-form-actions .btn-primary { width: auto; margin-top: 0; }
+.budget-list { margin-top: var(--sp-2); }
+.budget-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--line); }
+.budget-entry:last-child { border-bottom: 0; }
+.budget-entry-main { min-width: 0; }
+.budget-entry-actions { justify-content: flex-end; }
+.budget-entry-actions .btn { min-height: 36px; padding: 0 var(--sp-2); }
+.budget-page .card-head { align-items: flex-start; }
+@media (max-width: 600px) {
+  .budget-week-controls { grid-template-columns: 1fr 1fr; }
+  .budget-date-field { grid-column: 1 / -1; grid-row: 1; }
+  .budget-entry { grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2); }
+  .budget-entry-actions { grid-column: 1 / -1; justify-content: flex-start; }
+}
+@media (max-width: 400px) {
+  .budget-week-controls .btn { padding: 0 var(--sp-2); font-size: var(--fs-xs); }
+}

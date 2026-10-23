@@ -100,7 +100,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 80px; /* keep focused fields clear of the sticky tabs */
+  scroll-padding-top: var(--sp-4); /* tabs are static now, so only a small gap is needed */
 }
 
 body {
@@ -260,11 +260,9 @@ button {
   background: var(--red-bg);
 }
 
-/* Navigation tabs: sticky so they stay reachable in long lists */
+/* Navigation tabs: static, so they stay where they are in the page flow */
 .tabs {
-  position: sticky;
-  top: var(--sp-2);
-  z-index: 10;
+  position: static;
   display: flex;
   gap: var(--sp-1);
   margin-bottom: var(--sp-4);
@@ -1110,4 +1108,51 @@ input[type="checkbox"][aria-invalid="true"] {
 }
 @media (max-width: 400px) {
   .budget-week-controls .btn { padding: 0 var(--sp-2); font-size: var(--fs-xs); }
+}
+
+/* History: search, filters and sort.
+   Everything here is in normal flow (no sticky, fixed, absolute or transforms),
+   and the status row and results area reserve their space so nothing jumps. */
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.filter-bar label {
+  margin-bottom: var(--sp-1);
+}
+@media (min-width: 640px) {
+  .filter-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filter-search {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 860px) {
+  .filter-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.filter-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.filter-status {
+  min-height: 1.5em; /* constant height: the count text changing never shifts the layout */
+  margin: 0;
+  color: var(--mut);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.history-results {
+  min-height: 200px; /* keeps the card the same size when filters empty the list */
+}
+.btn:disabled:not(.btn-primary) {
+  opacity: 0.55;
 }

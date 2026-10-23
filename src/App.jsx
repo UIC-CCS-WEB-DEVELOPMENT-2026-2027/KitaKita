@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard.jsx'
 import History from './components/History.jsx'
 import Budget from './components/Budget.jsx'
 import Settings from './components/Settings.jsx'
+import mockData from './data/mockData.json'
 import {
   computeStats,
   cumulativeTotalCents,
@@ -29,6 +30,9 @@ function load(key) {
 
 const TABS = [['reg', 'Register'], ['dash', 'Insights'], ['hist', 'History'], ['budget', 'Budget']]
 
+// Sample entries come from src/data/mockData.json (ids 9001+ never clash with Date.now() ids).
+const SAMPLE_TX = mockData.transactions
+
 // The signed-in app. Each account gets its own saved data (key includes the user id).
 function Tracker({ user, onLogout }) {
   const storageKey = `${KEY}:${user.id}`
@@ -42,6 +46,9 @@ function Tracker({ user, onLogout }) {
 
   const { tx, open, cur } = data
   const stats = computeStats(tx, open)
+
+  // True once every sample entry is already in this account (the button then disables).
+  const sampleLoaded = SAMPLE_TX.every((s) => tx.some((t) => t.id === s.id))
 
   const addTx = (entry) => {
     const amountCents = Math.round(Number(entry.amt) * 100)
@@ -58,6 +65,19 @@ function Tracker({ user, onLogout }) {
   const updateSettings = (patch) => setData((d) => ({ ...d, ...patch }))
   const updateBudget = (budget) => setData((d) => ({ ...d, budget }))
   const clearAll = () => setData((d) => ({ ...emptyState(), budget: d.budget }))
+
+  // Adds only the sample entries that are not there yet, so clicking twice never duplicates.
+  // Opening cash is filled in only when it is still 0, so a balance you set yourself is kept.
+  const loadSample = () =>
+    setData((d) => {
+      const have = new Set(d.tx.map((t) => t.id))
+      const fresh = SAMPLE_TX.filter((s) => !have.has(s.id))
+      return {
+        ...d,
+        tx: [...d.tx, ...fresh],
+        open: d.open === 0 ? mockData.openingCash : d.open,
+      }
+    })
 
   return (
     <div className="wrap">
@@ -84,7 +104,16 @@ function Tracker({ user, onLogout }) {
       <main id="main">
         {tab === 'reg' && <Register tx={tx} stats={stats} cur={cur} onAdd={addTx} onDelete={deleteTx} />}
         {tab === 'dash' && <Dashboard stats={stats} cur={cur} hasData={tx.length > 0} />}
-        {tab === 'hist' && <History tx={tx} cur={cur} onDelete={deleteTx} onClear={clearAll} />}
+        {tab === 'hist' && (
+          <History
+            tx={tx}
+            cur={cur}
+            onDelete={deleteTx}
+            onClear={clearAll}
+            onLoadSample={loadSample}
+            sampleLoaded={sampleLoaded}
+          />
+        )}
         {tab === 'budget' && <Budget budget={data.budget || { weeks: {} }} onChange={updateBudget} cur={cur} />}
       </main>
       <footer><p className="note">Guidance is based only on the numbers you enter and is a starting point, not financial or tax advice. Data is saved in this browser.</p></footer>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import Callout from './Callout.jsx'
 import PasswordField from './PasswordField.jsx'
 import TextField from './TextField.jsx'
@@ -16,17 +16,22 @@ const IDS = {
 }
 const INITIAL = { currentPassword: '', newPassword: '', confirm: '' }
 
-const validate = (v) => ({
-  username: validators.username(v.username),
-  currentPassword: validators.currentPassword(v.currentPassword),
-  newPassword: validators.optionalNewPassword(v.newPassword),
-  confirm: validators.optionalConfirm(v.confirm, v.newPassword),
-})
-
 function AccountForm({ user, onSaved, onEdit }) {
   const { updateAccount } = useAuth()
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState('')
+  // Defined inside the component because it needs this account's email, so a new password
+  // equal to that email is rejected. useCallback keeps it stable between renders
+  // (useForm re-validates only when this function or the values change).
+  const validate = useCallback(
+    (v) => ({
+      username: validators.username(v.username),
+      currentPassword: validators.currentPassword(v.currentPassword),
+      newPassword: validators.optionalNewPassword(v.newPassword, user.email),
+      confirm: validators.optionalConfirm(v.confirm, v.newPassword),
+    }),
+    [user.email]
+  )
   const form = useForm({ ...INITIAL, username: user.username }, validate, () => {
     setFormError('')
     onEdit()

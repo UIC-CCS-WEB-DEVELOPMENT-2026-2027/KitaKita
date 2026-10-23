@@ -80,7 +80,8 @@ const categoryChoices = (type) =>
 //   onClear       wipe all entries
 //   onLoadSample  add the mock entries from src/data/mockData.json
 //   sampleLoaded  true once every mock entry is already present (disables the button)
-export default function History({ tx, cur, onDelete, onClear, onLoadSample, sampleLoaded }) {
+//   canLoadSample true ONLY for the Dummy demo account; every other account never sees the button
+export default function History({ tx, cur, onDelete, onClear, onLoadSample, sampleLoaded, canLoadSample }) {
   // The four controls are the ONLY state this component owns. Everything shown on screen
   // (the filtered list, the count, the month groups) is calculated from these four values
   // plus `tx`, so it can never get out of sync.
@@ -131,7 +132,7 @@ export default function History({ tx, cur, onDelete, onClear, onLoadSample, samp
   let results
   if (tx.length === 0) {
     // Case 1: nothing saved at all.
-    results = <p className="empty">No entries yet. Add one in Register, or load the sample data.</p>
+    results = <p className="empty">No entries yet. Add one in Register{canLoadSample ? ', or load the sample data' : ''}.</p>
   } else if (visible.length === 0) {
     // Case 2: there is data, but the current filters hide all of it.
     results = <p className="empty">No entries match your filters.</p>
@@ -154,10 +155,13 @@ export default function History({ tx, cur, onDelete, onClear, onLoadSample, samp
         {/* The count shows ALL entries, not the filtered number (that is shown further down). */}
         <h2 id="history-title">All entries ({tx.length})</h2>
         <div className="actions">
-          {/* Disabled once every sample entry exists, so it cannot add duplicates. */}
-          <button type="button" className="btn" onClick={onLoadSample} disabled={sampleLoaded}>
-            {sampleLoaded ? 'Sample data loaded' : 'Load sample data'}
-          </button>
+          {/* Not rendered at all unless this is the Dummy account. Disabled once every
+              sample entry exists, so it cannot add duplicates. */}
+          {canLoadSample && (
+            <button type="button" className="btn" onClick={onLoadSample} disabled={sampleLoaded}>
+              {sampleLoaded ? 'Sample data loaded' : 'Load sample data'}
+            </button>
+          )}
           {/* Exports everything, not only what is currently filtered. */}
           <button type="button" className="btn" onClick={() => exportCsv(tx)}>Export CSV</button>
           {/* window.confirm guards the destructive action; `&&` only calls onClear if confirmed. */}

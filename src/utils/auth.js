@@ -101,11 +101,19 @@ export function loadUsers() {
   return Array.isArray(users) ? users : []
 }
 
-// Find an account by normalised (trimmed, lower-case) email OR username.
+// CASE SENSITIVITY. Identifiers (email or username) are matched EXACTLY everywhere: only
+// surrounding spaces are ignored, letter case counts. "Dummy" can log in, "dummy" cannot,
+// and "Cona@gmail.com" and "cona@gmail.com" can both be registered as separate accounts.
+// (Passwords were already case-sensitive because the hash differs for any change.)
+export const cleanIdentifier = (value) => value.trim()
+
+// Find an account by EXACT email OR username (case-sensitive). Used by login, by the
+// sign-up "already registered" check and by the username-taken check.
 export function findByIdentifier(users, key) {
   if (!key) return undefined
-  return users.find((u) => normalizeEmail(u.username || '') === key || u.email === key)
+  return users.find((u) => u.username === key || u.email === key)
 }
+
 
 // Creates the prototype admin the first time it is needed. Safe to call repeatedly:
 // once the account exists (even after the admin edits it in Settings) it is left alone.

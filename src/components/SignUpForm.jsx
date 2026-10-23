@@ -14,7 +14,7 @@ const INITIAL = { name: '', email: '', password: '', confirm: '', terms: false }
 const validate = (v) => ({
   name: validators.name(v.name),
   email: validators.email(v.email),
-  password: validators.newPassword(v.password),
+  password: validators.newPassword(v.password, v.email), // also rejects password === email
   confirm: validators.confirm(v.confirm, v.password),
   terms: validators.terms(v.terms),
 })
@@ -62,6 +62,9 @@ export default function SignUpForm({ headingRef }) {
         if (err.field === 'email') {
           form.setServerError('email', 'This email is already registered.')
           queueFocus('signup-email')
+        } else if (err.field === 'password') {
+          form.setServerError('password', err.message)
+          queueFocus('signup-password')
         }
       } else {
         setFormError('Something went wrong. Please try again.')

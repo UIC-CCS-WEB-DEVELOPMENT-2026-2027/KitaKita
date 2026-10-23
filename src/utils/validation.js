@@ -3,6 +3,15 @@ export const MIN_PASSWORD = 8
 // Deliberately simple: something@something.tld with no spaces.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
+// Message shown when a password is just the account's email address.
+export const PASSWORD_IS_EMAIL = 'Your password cannot be the same as your email address.'
+
+// True when the password equals the email. The comparison ignores letter case and
+// surrounding spaces, so "Smile@Gmail.com" is rejected when the email is "smile@gmail.com".
+// Accounts with no email (admin, demo) have nothing to compare against, so they pass.
+export const isSameAsEmail = (password, email) =>
+  Boolean(email) && Boolean(password) && password.trim().toLowerCase() === email.trim().toLowerCase()
+
 // Each validator returns an error message, or '' when the value is fine.
 export const validators = {
   name: (v) => {
@@ -29,13 +38,16 @@ export const validators = {
   },
   loginPassword: (v) => (v ? '' : 'Enter your password.'),
   currentPassword: (v) => (v ? '' : 'Enter your current password to save changes.'),
-  newPassword: (v) => {
+  // `email` is optional: pass it wherever the account's email is known so the
+  // "password must not equal email" rule can be applied.
+  newPassword: (v, email = '') => {
     if (!v) return 'Create a password.'
+    if (isSameAsEmail(v, email)) return PASSWORD_IS_EMAIL
     if (v.length < MIN_PASSWORD) return `Use at least ${MIN_PASSWORD} characters. You have ${v.length}.`
     return ''
   },
   // Account settings: leaving the new password blank means "keep my current one".
-  optionalNewPassword: (v) => (v ? validators.newPassword(v) : ''),
+  optionalNewPassword: (v, email = '') => (v ? validators.newPassword(v, email) : ''),
   confirm: (v, password) => {
     if (!v) return 'Re-enter your password to confirm it.'
     if (v !== password) return 'Passwords do not match.'

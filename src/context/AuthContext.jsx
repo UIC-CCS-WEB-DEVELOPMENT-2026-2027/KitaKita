@@ -11,13 +11,14 @@ import {
   loadUsers,
   makeId,
   makeSalt,
-  normalizeEmail,
+  cleanIdentifier,
   publicUser,
   readSession,
   saveSession,
   wait,
   writeStore,
 } from '../utils/auth.js'
+import { PASSWORD_IS_EMAIL, isSameAsEmail } from '../utils/validation.js'
 
 export const AuthContext = createContext(null)
 
@@ -46,7 +47,8 @@ export function AuthProvider({ children }) {
     await wait(LATENCY_MS)
     // Make sure the built-in admin and demo accounts exist before we look anyone up.
     await ensureSeedAccounts()
-    const account = findByIdentifier(loadUsers(), normalizeEmail(email))
+    // Exact, case-sensitive match on the identifier (only surrounding spaces are ignored).
+    const account = findByIdentifier(loadUsers(), cleanIdentifier(email))
     const hash = account ? await hashPassword(password, account.salt) : null
     if (!account || hash !== account.hash) {
       // Same message for "no such account" and "wrong password" so accounts can't be probed.
@@ -62,10 +64,15 @@ export function AuthProvider({ children }) {
     // Make sure the built-in admin and demo accounts exist before we look anyone up.
     await ensureSeedAccounts()
     const users = loadUsers()
-    const key = normalizeEmail(email)
+    // The email is stored exactly as typed (no silent lower-casing), and login must match
+    // it exactly. Uniqueness is case-sensitive too: "Cona@gmail.com" and "cona@gmail.com"
+    // are two different identifiers, so one does not block the other.
+    const key = cleanIdentifier(email)
     if (findByIdentifier(users, key)) {
       throw new AuthError('An account with this email already exists. Log in instead, or use a different email.', 'email')
     }
+    // Server-side rule (the form checks this too, but the form alone can be bypassed).
+    if (isSameAsEmail(password, key)) throw new AuthError(PASSWORD_IS_EMAIL, 'password')
     const salt = makeSalt()
     const account = {
       id: makeId(),
@@ -99,9 +106,15 @@ export function AuthProvider({ children }) {
     }
 
     const nextUsername = username.trim()
-    const clash = findByIdentifier(loadUsers(), normalizeEmail(nextUsername))
-    if (clash && clash.id !== account.id) {
+    // Exact (case-sensitive) check, skipping the account being edited.
+    const clash = findByIdentifier(loadUsers().filter((u) => u.id !== account.id), nextUsername)
+    if (clash) {
       throw new AuthError('That username is already taken. Choose a different one.', 'username')
+    }
+
+    // A new password may not equal this account's email address.
+    if (newPassword && isSameAsEmail(newPassword, account.email)) {
+      throw new AuthError(PASSWORD_IS_EMAIL, 'newPassword')
     }
 
     const updated = { ...account, username: nextUsername }

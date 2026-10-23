@@ -91,6 +91,10 @@ function Tracker({ user, onLogout }) {
   // instead of being stored, so they can never disagree with the entries.
   const stats = computeStats(tx, open)
 
+  // Only the seeded Dummy account may use sample data. Checked by account id (not by the
+  // typed username), so renaming or look-alike usernames cannot unlock it.
+  const isDemo = user.id === DEMO_ID
+
   // True once every sample entry is already in this account (the button then disables).
   // .every() + .some() = "for each sample entry, is there a saved entry with the same id?"
   const sampleLoaded = SAMPLE_TX.every((s) => tx.some((t) => t.id === s.id))
@@ -121,7 +125,8 @@ function Tracker({ user, onLogout }) {
 
   // Adds only the sample entries that are not there yet, so clicking twice never duplicates.
   // Opening cash is filled in only when it is still 0, so a balance you set yourself is kept.
-  const loadSample = () =>
+  const loadSample = () => {
+    if (!isDemo) return // second line of defence: the button is hidden for everyone else too
     setData((d) => {
       const have = new Set(d.tx.map((t) => t.id)) // ids already saved, for fast lookup
       const fresh = SAMPLE_TX.filter((s) => !have.has(s.id))
@@ -131,6 +136,7 @@ function Tracker({ user, onLogout }) {
         open: d.open === 0 ? mockData.openingCash : d.open,
       }
     })
+  }
 
   return (
     <div className="wrap">
@@ -169,6 +175,7 @@ function Tracker({ user, onLogout }) {
             onClear={clearAll}
             onLoadSample={loadSample}
             sampleLoaded={sampleLoaded}
+            canLoadSample={isDemo}
           />
         )}
         {tab === 'budget' && <Budget budget={data.budget || { weeks: {} }} onChange={updateBudget} cur={cur} />}

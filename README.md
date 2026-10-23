@@ -40,18 +40,18 @@ KitaKita/
 │   └── UI-UX-CHANGES.md
 └── src/
     ├── main.jsx
-    ├── App.jsx                 # UPDATED: imports mockData, loadSample, passes props to History
-    ├── styles.css              # UPDATED: static tabs, filter bar styles
+    ├── App.jsx                 
+    ├── styles.css              
     ├── components/
     │   ├── AccountSettings.jsx
     │   ├── Auth.jsx
-    │   ├── Budget.jsx          # was missing from your original tree
+    │   ├── Budget.jsx          
     │   ├── Callout.jsx
     │   ├── ChangePasswordForm.jsx
     │   ├── ChangeUsernameForm.jsx
     │   ├── Dashboard.jsx
     │   ├── ForgotPasswordForm.jsx
-    │   ├── History.jsx         # UPDATED: search, type, category, sort, .map() rendering
+    │   ├── History.jsx         
     │   ├── Icons.jsx
     │   ├── Loading.jsx
     │   ├── Login.jsx
@@ -69,7 +69,7 @@ KitaKita/
     │   └── AuthContext.jsx
     ├── data/
     │   ├── categories.json
-    │   ├── mockData.json       # NEW: sample transactions + opening cash
+    │   ├── mockData.json       
     │   └── transactions.json
     ├── hooks/
     │   ├── useAuth.js
@@ -90,7 +90,7 @@ KitaKita/
 
 ## Deployment
 
-- **Deployed on Vercel**: (https://kita-kita-7lgcdasbp-ihalik-250000000758-5824.vercel.app/)
+- **Deployed on Vercel**: (https://kita-kita-4jam806u5-ihalik-250000000758-5824.vercel.app/)
 - **Deployed on Netlify**: (https://visionary-palmier-2f25d1.netlify.app)
 
 Both services redeploy automatically each time `main` is updated.

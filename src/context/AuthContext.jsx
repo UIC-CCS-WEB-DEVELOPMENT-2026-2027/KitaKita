@@ -5,7 +5,7 @@ import {
   SESSION_KEY,
   USERS_KEY,
   clearSession,
-  ensureAdminAccount,
+  ensureSeedAccounts,
   findByIdentifier,
   hashPassword,
   loadUsers,
@@ -25,9 +25,9 @@ export function AuthProvider({ children }) {
   // Read the saved session synchronously so a signed-in person never sees a login flash.
   const [user, setUser] = useState(readSession)
 
-  // Make sure the prototype admin account exists as soon as the app loads.
+  // Make sure the prototype admin and demo accounts exist as soon as the app loads.
   useEffect(() => {
-    ensureAdminAccount()
+    ensureSeedAccounts()
   }, [])
 
   // Keep tabs in sync: logging out (or in) in one tab updates the others.
@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
   // `email` is the login identifier: an email address or a username.
   const login = useCallback(async ({ email, password, remember }) => {
     await wait(LATENCY_MS)
-    await ensureAdminAccount()
+    await ensureSeedAccounts()
     const account = findByIdentifier(loadUsers(), normalizeEmail(email))
     const hash = account ? await hashPassword(password, account.salt) : null
     if (!account || hash !== account.hash) {
@@ -56,7 +56,7 @@ export function AuthProvider({ children }) {
 
   const signup = useCallback(async ({ name, email, password }) => {
     await wait(LATENCY_MS)
-    await ensureAdminAccount()
+    await ensureSeedAccounts()
     const users = loadUsers()
     const key = normalizeEmail(email)
     if (findByIdentifier(users, key)) {

@@ -13,6 +13,13 @@ const ADMIN_USERNAME = 'Secret123'
 const ADMIN_PASSWORD = '123'
 const LEGACY_ADMIN_PASSWORD = 'Secret' // earlier default; upgraded automatically below
 
+// Demo account (testing/demo only). Log in with username "Dummy" and password "123".
+// Its register is pre-filled with src/data/mockData.json the first time it opens (see App.jsx).
+// Credentials are visible in source, so remove this seed before handling real accounts.
+export const DEMO_ID = 'u_demo'
+const DEMO_USERNAME = 'Dummy'
+const DEMO_PASSWORD = '123'
+
 export class AuthError extends Error {
   constructor(message, field) {
     super(message)
@@ -130,6 +137,36 @@ export async function ensureAdminAccount() {
       createdAt: new Date().toISOString(),
     },
   ])
+}
+
+// Creates the demo account the first time it is needed. Once it exists it is left alone,
+// even if its password or username is changed later in Settings.
+export async function ensureDemoAccount() {
+  if (loadUsers().some((u) => u.id === DEMO_ID)) return
+  const salt = makeSalt()
+  const hash = await hashPassword(DEMO_PASSWORD, salt)
+  const users = loadUsers() // re-read: another call may have finished while hashing
+  if (users.some((u) => u.id === DEMO_ID)) return
+  writeStore('localStorage', USERS_KEY, [
+    ...users,
+    {
+      id: DEMO_ID,
+      name: 'Dummy',
+      email: '',
+      username: DEMO_USERNAME,
+      role: 'user',
+      salt,
+      hash,
+      createdAt: new Date().toISOString(),
+    },
+  ])
+}
+
+// One call that makes sure every built-in account exists. Run in order so the two
+// read-modify-write updates of the users list never overlap.
+export async function ensureSeedAccounts() {
+  await ensureAdminAccount()
+  await ensureDemoAccount()
 }
 
 // Session lives in sessionStorage (ends with the tab) unless "Remember me" was

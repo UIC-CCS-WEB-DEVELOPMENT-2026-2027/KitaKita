@@ -13,19 +13,29 @@ import {
 } from './utils/finance.js'
 import { LogOutIcon } from './components/Icons.jsx'
 import { useAuth } from './hooks/useAuth.js'
+import { DEMO_ID } from './utils/auth.js'
 
 const KEY = 'kitakita:v1'
 // Brand-new accounts start completely empty: no entries, ₱0.00 opening cash.
 const emptyState = () => ({ tx: [], open: 0, cur: '₱', budget: { weeks: {} } })
 
-function load(key) {
+// The demo account starts with the sample entries and opening cash from mockData.json.
+const demoState = () => ({
+  ...emptyState(),
+  tx: mockData.transactions.map((t) => ({ ...t })),
+  open: mockData.openingCash,
+})
+
+// Saved data wins. Only when nothing is saved yet does the demo account get its sample data,
+// so edits, deletions and "Clear all data" are never undone by a refresh or a redeploy.
+function load(key, userId) {
   try {
     const saved = JSON.parse(localStorage.getItem(key))
     if (saved && Array.isArray(saved.tx)) {
       return { ...emptyState(), ...saved, budget: saved.budget && typeof saved.budget === 'object' ? saved.budget : { weeks: {} } }
     }
   } catch {}
-  return emptyState()
+  return userId === DEMO_ID ? demoState() : emptyState()
 }
 
 const TABS = [['reg', 'Register'], ['dash', 'Insights'], ['hist', 'History'], ['budget', 'Budget']]
@@ -36,7 +46,7 @@ const SAMPLE_TX = mockData.transactions
 // The signed-in app. Each account gets its own saved data (key includes the user id).
 function Tracker({ user, onLogout }) {
   const storageKey = `${KEY}:${user.id}`
-  const [data, setData] = useState(() => load(storageKey))
+  const [data, setData] = useState(() => load(storageKey, user.id))
   const [tab, setTab] = useState('reg')
   const [showSettings, setShowSettings] = useState(false)
 

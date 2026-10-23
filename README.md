@@ -37,45 +37,47 @@ KitaKita/
 ├── vite.config.js
 ├── netlify.toml
 ├── docs/
-│   └── UI-UX-CHANGES.md      # UI/UX change log, design tokens, a11y checklist, test results
+│   └── UI-UX-CHANGES.md
 └── src/
-    ├── main.jsx              # app entry point
-    ├── App.jsx               # state, tabs, saving to localStorage
-    ├── styles.css            # all styling (design tokens at the top)
+    ├── main.jsx
+    ├── App.jsx                 # UPDATED: imports mockData, loadSample, passes props to History
+    ├── styles.css              # UPDATED: static tabs, filter bar styles
     ├── components/
-    │   ├── AccountSettings.jsx    # account settings page (Code provided below)
-    │   ├── Auth.jsx               # auth tab wrapper (Code provided below)
-    │   ├── Callout.jsx            # alert callout component (Code provided below)
-    │   ├── ChangePasswordForm.jsx # change password form (Code provided below)
-    │   ├── ChangeUsernameForm.jsx # change username form (Code provided below)
-    │   ├── Dashboard.jsx          # insights, chart, profit split (Code provided below)
-    │   ├── ForgotPasswordForm.jsx # forgot password form (Code provided below)
-    │   ├── History.jsx            # entries list, CSV export, reset (Code provided below)
-    │   ├── Icons.jsx              # icon SVG components (Code provided below)
-    │   ├── Loading.jsx            # loading indicator (Code provided below)
-    │   ├── Login.jsx              # login page wrapper (Code provided below)
-    │   ├── LoginForm.jsx          # login form component (Code provided below)
-    │   ├── PasswordField.jsx      # password field with toggle (Code provided below)
-    │   ├── ProtectedRoute.jsx     # auth route guard (Code provided below)
-    │   ├── Register.jsx           # add sales and expenses (Code provided below)
-    │   ├── Settings.jsx           # opening balance and currency (Code provided below)
-    │   ├── SignUpForm.jsx         # sign up form component (Code provided below)
-    │   ├── StrengthMeter.jsx      # password strength meter (Code provided below)
-    │   ├── TextField.jsx          # custom text input (Code provided below)
-    │   ├── Tracker.jsx            # main register tracker container (Code provided below)
-    │   └── TxRow.jsx              # one entry row
+    │   ├── AccountSettings.jsx
+    │   ├── Auth.jsx
+    │   ├── Budget.jsx          # was missing from your original tree
+    │   ├── Callout.jsx
+    │   ├── ChangePasswordForm.jsx
+    │   ├── ChangeUsernameForm.jsx
+    │   ├── Dashboard.jsx
+    │   ├── ForgotPasswordForm.jsx
+    │   ├── History.jsx         # UPDATED: search, type, category, sort, .map() rendering
+    │   ├── Icons.jsx
+    │   ├── Loading.jsx
+    │   ├── Login.jsx
+    │   ├── LoginForm.jsx
+    │   ├── PasswordField.jsx
+    │   ├── ProtectedRoute.jsx
+    │   ├── Register.jsx
+    │   ├── Settings.jsx
+    │   ├── SignUpForm.jsx
+    │   ├── StrengthMeter.jsx
+    │   ├── TextField.jsx
+    │   ├── Tracker.jsx
+    │   └── TxRow.jsx
     ├── context/
-    │   └── AuthContext.jsx   # authentication context provider (Code provided below)
+    │   └── AuthContext.jsx
     ├── data/
-    │   ├── transactions.json # sample (mock) transactions (Code provided below)
-    │   └── categories.json   # sale and expense categories (Code provided below)
+    │   ├── categories.json
+    │   ├── mockData.json       # NEW: sample transactions + opening cash
+    │   └── transactions.json
     ├── hooks/
-    │   ├── useAuth.js        # authentication hook (Code provided below)
-    │   └── useForm.js        # form management hook (Code provided below)
+    │   ├── useAuth.js
+    │   └── useForm.js
     └── utils/
-        ├── auth.js           # authentication helpers (Code provided below)
-        ├── validation.js     # input validation rules (Code provided below)
-        └── finance.js        # all calculations and guidance rules (Code provided below)
+        ├── auth.js
+        ├── finance.js
+        └── validation.js
 ```
 
 ## How the Calculations Work
@@ -88,7 +90,7 @@ KitaKita/
 
 ## Deployment
 
-- **Deployed on Vercel**: (https://kita-kita-o1e12b5sk-ihalik-250000000758-5824.vercel.app/)
+- **Deployed on Vercel**: (https://kita-kita-7lgcdasbp-ihalik-250000000758-5824.vercel.app/)
 - **Deployed on Netlify**: (https://visionary-palmier-2f25d1.netlify.app)
 
 Both services redeploy automatically each time `main` is updated.

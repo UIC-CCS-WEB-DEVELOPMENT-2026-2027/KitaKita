@@ -26,6 +26,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(readSession)
 
   // Make sure the prototype admin and demo accounts exist as soon as the app loads.
+  // Runs once on start-up. It is safe to repeat: existing accounts are never overwritten,
+  // which is why React StrictMode running effects twice in development does no harm.
   useEffect(() => {
     ensureSeedAccounts()
   }, [])
@@ -42,6 +44,7 @@ export function AuthProvider({ children }) {
   // `email` is the login identifier: an email address or a username.
   const login = useCallback(async ({ email, password, remember }) => {
     await wait(LATENCY_MS)
+    // Make sure the built-in admin and demo accounts exist before we look anyone up.
     await ensureSeedAccounts()
     const account = findByIdentifier(loadUsers(), normalizeEmail(email))
     const hash = account ? await hashPassword(password, account.salt) : null
@@ -56,6 +59,7 @@ export function AuthProvider({ children }) {
 
   const signup = useCallback(async ({ name, email, password }) => {
     await wait(LATENCY_MS)
+    // Make sure the built-in admin and demo accounts exist before we look anyone up.
     await ensureSeedAccounts()
     const users = loadUsers()
     const key = normalizeEmail(email)

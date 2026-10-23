@@ -16,6 +16,11 @@ const LEGACY_ADMIN_PASSWORD = 'Secret' // earlier default; upgraded automaticall
 // Demo account (testing/demo only). Log in with username "Dummy" and password "123".
 // Its register is pre-filled with src/data/mockData.json the first time it opens (see App.jsx).
 // Credentials are visible in source, so remove this seed before handling real accounts.
+//
+// Why a fixed id: App.jsx compares the signed-in user's id with DEMO_ID to decide whether
+// to pre-fill sample data. It is separate from ADMIN_ID, so the admin account stays clean.
+// Why this works on localhost AND Vercel: the account is created by code at app start-up,
+// inside each browser's own localStorage, so no server or deployment setting is involved.
 export const DEMO_ID = 'u_demo'
 const DEMO_USERNAME = 'Dummy'
 const DEMO_PASSWORD = '123'
@@ -142,19 +147,23 @@ export async function ensureAdminAccount() {
 // Creates the demo account the first time it is needed. Once it exists it is left alone,
 // even if its password or username is changed later in Settings.
 export async function ensureDemoAccount() {
+  // Fast exit: the account is already there, so do nothing (this is what makes it safe
+  // to call on every page load and every login).
   if (loadUsers().some((u) => u.id === DEMO_ID)) return
+  // Same storage format as real accounts: a random salt plus a SHA-256 hash.
+  // The password "123" itself is never stored.
   const salt = makeSalt()
   const hash = await hashPassword(DEMO_PASSWORD, salt)
   const users = loadUsers() // re-read: another call may have finished while hashing
-  if (users.some((u) => u.id === DEMO_ID)) return
+  if (users.some((u) => u.id === DEMO_ID)) return // second check after the async gap
   writeStore('localStorage', USERS_KEY, [
     ...users,
     {
       id: DEMO_ID,
-      name: 'Dummy',
-      email: '',
-      username: DEMO_USERNAME,
-      role: 'user',
+      name: 'Dummy',            // shown in the app header
+      email: '',                // no email: this account logs in by username only
+      username: DEMO_USERNAME,  // login matching ignores letter case ("dummy" works too)
+      role: 'user',             // a normal user, NOT an administrator
       salt,
       hash,
       createdAt: new Date().toISOString(),
@@ -162,8 +171,9 @@ export async function ensureDemoAccount() {
   ])
 }
 
-// One call that makes sure every built-in account exists. Run in order so the two
-// read-modify-write updates of the users list never overlap.
+// One call that makes sure every built-in account exists. Run in order (await each one)
+// so the two read-modify-write updates of the users list never overlap and overwrite
+// each other. AuthContext calls this at start-up, at login and at sign-up.
 export async function ensureSeedAccounts() {
   await ensureAdminAccount()
   await ensureDemoAccount()

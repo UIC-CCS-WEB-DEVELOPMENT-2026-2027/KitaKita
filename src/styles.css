@@ -1111,8 +1111,12 @@ input[type="checkbox"][aria-invalid="true"] {
 }
 
 /* History: search, filters and sort.
-   Everything here is in normal flow (no sticky, fixed, absolute or transforms),
-   and the status row and results area reserve their space so nothing jumps. */
+   STATIC POSITIONING: every rule below keeps elements in normal document flow
+   (no position: sticky / fixed / absolute, no transforms, no animations on layout).
+   On top of that, the status row and results area reserve a fixed amount of space,
+   so typing in the search box or changing a filter can never push things around. */
+
+/* The filter controls sit in a plain CSS grid: one column on phones... */
 .filter-bar {
   display: grid;
   grid-template-columns: 1fr;
@@ -1122,6 +1126,8 @@ input[type="checkbox"][aria-invalid="true"] {
 .filter-bar label {
   margin-bottom: var(--sp-1);
 }
+/* ...and from tablet width up, the search box takes the full first row
+   and the three dropdowns share the second row. */
 @media (min-width: 640px) {
   .filter-bar {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1135,6 +1141,8 @@ input[type="checkbox"][aria-invalid="true"] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+/* Result count + "Clear filters" button. The button is always present (only disabled),
+   so this row keeps the same height whether or not a filter is active. */
 .filter-status-row {
   display: flex;
   flex-wrap: wrap;
@@ -1153,6 +1161,8 @@ input[type="checkbox"][aria-invalid="true"] {
 .history-results {
   min-height: 200px; /* keeps the card the same size when filters empty the list */
 }
+/* Greyed-out look for disabled secondary buttons (Clear filters, Sample data loaded).
+   Only the opacity changes; size and position stay exactly the same. */
 .btn:disabled:not(.btn-primary) {
   opacity: 0.55;
 }

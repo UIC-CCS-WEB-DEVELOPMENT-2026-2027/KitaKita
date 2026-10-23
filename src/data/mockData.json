@@ -1,4 +1,5 @@
 {
+  "_about": "Sample data for the Dummy demo account. JSON cannot hold comments, so this key is ignored by the code. openingCash is the starting cash balance. transactions is the list shown in History: id (unique, 9001+ so it never clashes with Date.now() ids), date (YYYY-MM-DD), type ('sale' = money in, 'expense' = money out), cat (must match a name in categories.json), desc (free text), amt (amount in pesos). Entries are in date order, Jul to Oct 2026.",
   "openingCash": 50000,
   "transactions": [
     { "id": 9001, "date": "2026-07-01", "type": "expense", "cat": "Rent", "desc": "July shop rent", "amt": 20000 },

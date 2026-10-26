@@ -1,3 +1,51 @@
+/*
+ * =============================================================================
+ * FILE OVERVIEW: styles.css
+ * =============================================================================
+ *
+ * WHAT THIS FILE DOES
+ * -------------------
+ * styles.css is the single global stylesheet for the whole Kita Kita app. It is
+ * NOT React code (no JSX, no hooks, no props, no state). It controls how every
+ * element looks: colours, fonts, spacing, layout, light/dark mode, buttons,
+ * forms, lists, the chart, the auth screens and the budget/history tools.
+ *
+ * WHERE IT FITS IN THE APPLICATION ARCHITECTURE
+ * ---------------------------------------------
+ *   main.jsx runs `import './styles.css'`. Vite injects the CSS into the page,
+ *   so it applies to every component. React components connect to it only
+ *   through the `className` attribute, for example:
+ *     App.jsx   className="wrap", "app-header", "brand", "k1", "k2", "tag",
+ *               "header-actions", "user-name", "btn", "tabs", "skip-link", "note".
+ *     The tab and auth components (Register, Dashboard, History, Budget,
+ *     Settings, Auth) are the likely users of the other classes; check their
+ *     className values to confirm which class is used where.
+ *   Attribute selectors connect CSS to React props/state:
+ *     [aria-current="page"]   <- App.jsx sets aria-current={tab === id ? 'page' : undefined},
+ *                                so the ACTIVE tab (driven by the `tab` useState) gets
+ *                                the highlighted look. State change -> re-render ->
+ *                                attribute changes -> CSS restyles. No JS touches the CSS.
+ *     [aria-pressed="true"], [aria-invalid="true"], [data-level="2"], :disabled
+ *                             <- the same idea for toggles, errors, password strength, buttons.
+ *
+ * PRIMARY CSS MECHANICS USED (be ready to explain these)
+ * ------------------------------------------------------
+ *   - No React mechanics here (no useState, props, .map(), .filter()).
+ *     The closest links to React are: class names generated in JSX, the
+ *     aria-* attributes set from state, and list rows produced by .map()
+ *     (the .tx-list / .tx / .tips / .budget-entry styles style those repeated items).
+ *   - CSS custom properties (variables) in :root, used with var(--name).
+ *   - Dark mode through @media (prefers-color-scheme: dark), which only
+ *     redefines the variables.
+ *   - Responsive design through @media (min-width / max-width) breakpoints.
+ *   - Flexbox (display: flex) and CSS Grid (display: grid, grid-template-columns).
+ *   - Accessibility: skip link, :focus-visible ring, .sr-only, 44px touch
+ *     targets, reduced-motion support, colour never used alone.
+ *   - Cascade rules: later rules with the same specificity win; more specific
+ *     selectors (for example .tabs.auth-tabs) beat less specific ones.
+ * =============================================================================
+ */
+
 /* ==========================================================================
    Kita Kita: styles
    One stylesheet, organised top to bottom:
@@ -9,1105 +57,2108 @@
    ========================================================================== */
 
 /* 1. Design tokens ------------------------------------------------------- */
+/* :root targets the top-level <html> element, so variables defined here are available everywhere in the page. */
 :root {
   /* Colour (light) */
+  /* Page background colour (very light grey). */
   --bg: #f6f7f9;
+  /* Background of cards and panels (white). */
   --card: #ffffff;
+  /* Background of input fields (white in light mode). */
   --field: #ffffff;
+  /* Main text colour (near-black blue). */
   --ink: #16202a;
+  /* Muted (secondary) text colour. */
   --mut: #5b6577;
+  /* Light divider and border colour. */
   --line: #e4e7ec;
+  /* Darker border for form controls so they meet the 3:1 contrast rule. */
   --field-line: #818b9c;
 
+  /* Primary brand colour (teal) used for main buttons and the active tab. */
   --pri: #0f766e;
+  /* Darker teal shown when hovering over a primary button. */
   --pri-hover: #0b5e57;
+  /* Text colour placed on top of the primary colour (white). */
   --on-pri: #ffffff;
+  /* Very light teal used for soft backgrounds. */
   --pri-soft: #ccfbf1;
+  /* Teal used for coloured text such as links. */
   --pri-text: #0b5e57;
 
+  /* Red text/border colour for errors, negative numbers and expenses. */
   --red: #b42318;
+  /* Light red background that pairs with --red. */
   --red-bg: #fee4e2;
+  /* Green text colour for positive numbers, sales and success. */
   --grn: #067647;
+  /* Light green background that pairs with --grn. */
   --grn-bg: #d1fadf;
+  /* Amber (orange-brown) text colour for warnings. */
   --amb: #93370d;
+  /* Light amber background that pairs with --amb. */
   --amb-bg: #fef0c7;
 
+  /* Semi-transparent white used to draw diagonal stripes on expense bars. */
   --stripe: rgb(255 255 255 / 0.5); /* pattern on expense bars (not colour-only) */
+  /* Subtle drop shadow used on cards and stat tiles. */
   --shadow: 0 1px 2px rgb(16 24 40 / 0.06);
 
   /* Brand (same in both modes) */
+  /* Black background of the "Kita Kita" logo box (same in light and dark mode). */
   --brand-black: #121212;
+  /* Orange colour of the first word of the logo (the .k1 span). */
   --brand-orange: #ff8a00;
 
   /* Type scale */
+  /* Font stack: the system's native UI font first, then fallbacks. */
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  /* Extra-small text size (13px at the default size). */
   --fs-xs: 0.8125rem; /* 13px: smallest text used */
+  /* Small text size (14px). */
   --fs-sm: 0.875rem;
+  /* Base text size (16px). */
   --fs-base: 1rem;
+  /* Medium text size (17px), used for h2. */
   --fs-md: 1.0625rem;
+  /* Large text size (22px). */
   --fs-lg: 1.375rem;
+  /* Extra-large text size (28px), used for the amount input. */
   --fs-xl: 1.75rem;
 
   /* Spacing, radius, touch target */
+  /* Spacing step 1: 4px. */
   --sp-1: 4px;
+  /* Spacing step 2: 8px. */
   --sp-2: 8px;
+  /* Spacing step 3: 12px. */
   --sp-3: 12px;
+  /* Spacing step 4: 16px. */
   --sp-4: 16px;
+  /* Spacing step 5: 24px. */
   --sp-5: 24px;
+  /* Spacing step 6: 32px. */
   --sp-6: 32px;
+  /* Small corner radius (8px). */
   --radius-sm: 8px;
+  /* Medium corner radius (12px). */
   --radius-md: 12px;
+  /* Large corner radius (16px), used on cards. */
   --radius-lg: 16px;
+  /* Minimum clickable/tappable size (44px) recommended for touch screens. */
   --tap: 44px; /* minimum touch target */
 
+  /* Tell the browser the page supports both light and dark, so native controls (date picker, select) match the theme. */
   color-scheme: light dark; /* native date picker / select follow the theme */
+/* Close the :root rule. */
 }
 
+/* Apply the rules inside only when the user's operating system is set to dark mode. */
 @media (prefers-color-scheme: dark) {
+  /* Re-target :root so the same variable names get new, dark values. */
   :root {
+    /* Dark page background. */
     --bg: #0e1419;
+    /* Dark card background. */
     --card: #18212a;
+    /* Dark input background. */
     --field: #0e1419;
+    /* Light text for dark backgrounds. */
     --ink: #e8edf2;
+    /* Muted text, lightened for dark mode. */
     --mut: #9aa5b4;
+    /* Dark divider colour. */
     --line: #2f3b48;
+    /* Input border colour for dark mode. */
     --field-line: #627386;
 
+    /* Brighter teal so it stands out on dark backgrounds. */
     --pri: #2dd4bf;
+    /* Even lighter teal for hover. */
     --pri-hover: #5eead4;
+    /* Dark text placed on the bright teal. */
     --on-pri: #06201d;
+    /* Dark teal soft background. */
     --pri-soft: #123c39;
+    /* Light teal text colour. */
     --pri-text: #5eead4;
 
+    /* Light red text for dark mode. */
     --red: #fda29b;
+    /* Dark red background. */
     --red-bg: #3b1a17;
+    /* Light green text for dark mode. */
     --grn: #75e0a7;
+    /* Dark green background. */
     --grn-bg: #0f3322;
+    /* Light amber text for dark mode. */
     --amb: #fec84b;
+    /* Dark amber background. */
     --amb-bg: #3a2a0a;
 
+    /* Dark semi-transparent stripes (white stripes would be too harsh on dark). */
     --stripe: rgb(0 0 0 / 0.3);
+    /* No shadow in dark mode (shadows are barely visible on dark). */
     --shadow: none;
+  /* Close the :root rule inside the media query. */
   }
+/* Close the dark-mode media query. */
 }
 
 /* 2. Base ---------------------------------------------------------------- */
+/* Selector part 1: every element on the page. */
 *,
+/* Selector part 2: the ::before pseudo-element of every element. */
 *::before,
+/* Selector part 3: the ::after pseudo-element of every element. */
 *::after {
+  /* border-box makes width include padding and border, so sizes are predictable and nothing overflows. */
   box-sizing: border-box;
+/* Close the universal rule. */
 }
 
+/* Styles for the root <html> element. */
 html {
+  /* Stop mobile browsers from automatically enlarging text when the phone is rotated. */
   -webkit-text-size-adjust: 100%;
+  /* When jumping to an anchor (such as #main), leave 16px of space above the target. */
   scroll-padding-top: var(--sp-4); /* tabs are static now, so only a small gap is needed */
+/* Close the html rule. */
 }
 
+/* Styles for the <body> element, which holds the whole app. */
 body {
+  /* Remove the browser's default 8px body margin. */
   margin: 0;
+  /* Use the page background variable (changes automatically in dark mode). */
   background: var(--bg);
+  /* Use the main text colour variable. */
   color: var(--ink);
+  /* Font shorthand: size / line-height family; 1rem text, 1.5 line spacing, and the system font stack. */
   font: var(--fs-base) / 1.5 var(--font);
   /* viewport-fit=cover (index.html) needs the notch/home-bar insets */
+  /* Padding shorthand (top right bottom left): env() reads the phone's safe-area insets (notch, home bar) and falls back to 0 on other devices. */
   padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0)
+    /* Continuation of the padding value: the left inset, which completes the four values. */
     env(safe-area-inset-left, 0);
+/* Close the body rule. */
 }
 
+/* Selector part 1: all level-1 headings (the "Kita Kita" brand is an h1). */
 h1,
+/* Selector part 2: all level-2 headings (card titles). */
 h2,
+/* Selector part 3: all level-3 headings (month groups in History). */
 h3 {
+  /* Remove default heading margins; spacing is controlled by other rules. */
   margin: 0;
+  /* Tight line height for headings (1.25 times the font size). */
   line-height: 1.25;
+/* Close the heading rule. */
 }
 
+/* Extra styling for level-2 headings only. */
 h2 {
+  /* Use the medium font size variable (17px). */
   font-size: var(--fs-md);
+  /* Bold text. */
   font-weight: 700;
+  /* 12px gap below the heading. */
   margin-bottom: var(--sp-3);
+/* Close the h2 rule. */
 }
 
+/* Selector part 1: all buttons. */
 button,
+/* Selector part 2: all inputs. */
 input,
+/* Selector part 3: all dropdowns. */
 select {
+  /* Make form controls inherit the page font instead of the browser's smaller default. */
   font: inherit;
+/* Close the form-control font rule. */
 }
 
+/* Styles for all buttons. */
 button {
+  /* Show the pointing-hand cursor to signal that buttons are clickable. */
   cursor: pointer;
+/* Close the button rule. */
 }
 
 /* One consistent, high-visibility keyboard focus ring */
+/* :focus-visible matches only elements focused by keyboard (Tab), not by mouse click. */
 :focus-visible {
+  /* Draw a thick 3px solid outline in the primary colour. */
   outline: 3px solid var(--pri);
+  /* Push the outline 2px away from the element so it does not touch the border. */
   outline-offset: 2px;
+/* Close the focus rule. */
 }
 
 /* 3. Layout -------------------------------------------------------------- */
+/* .wrap is the className on the outer div in App.jsx's Tracker; it is the page container. */
 .wrap {
+  /* Never wider than 960px, so the app stays readable on big screens. */
   max-width: 960px;
+  /* 0 top and bottom, auto left and right: centres the container horizontally. */
   margin: 0 auto;
+  /* 16px of inner space on phones. */
   padding: var(--sp-4);
+/* Close the .wrap rule. */
 }
 
+/* .app-header is the <header> in App.jsx holding the brand and the buttons. */
 .app-header {
+  /* Flexbox puts the brand and the actions side by side. */
   display: flex;
+  /* Push the brand to the far left and the buttons to the far right. */
   justify-content: space-between;
+  /* Align both groups vertically in the middle. */
   align-items: center;
+  /* 12px gap between the two groups. */
   gap: var(--sp-3);
+  /* 16px space below the header. */
   margin-bottom: var(--sp-4);
+/* Close the .app-header rule. */
 }
 
+/* .skip-link is the "Skip to main content" link at the top of App.jsx. */
 .skip-link {
+  /* Take it out of normal flow so it can be moved off-screen. */
   position: absolute;
+  /* Place it 8px from the left edge when visible. */
   left: var(--sp-2);
+  /* Hide it by moving it 100px above the top of the page. */
   top: -100px;
+  /* Keep it above other content when it appears. */
   z-index: 30;
+  /* 8px vertical and 16px horizontal inner space. */
   padding: var(--sp-2) var(--sp-4);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Primary colour background. */
   background: var(--pri);
+  /* Text colour that contrasts with the primary colour. */
   color: var(--on-pri);
+  /* Bold text. */
   font-weight: 700;
+  /* Remove the default link underline. */
   text-decoration: none;
+/* Close the .skip-link rule. */
 }
+/* When a keyboard user tabs onto the skip link, this rule applies. */
 .skip-link:focus {
+  /* Slide it into view, 8px from the top. */
   top: var(--sp-2);
+/* Close the focus rule. */
 }
 
 /* Register: form and latest entries sit side by side on wide screens */
+/* Direct child (>) cards of .register-grid get spacing between them when stacked on small screens. */
 .register-grid > .card {
+  /* 16px gap below each stacked card. */
   margin-bottom: var(--sp-4);
+/* Close the rule. */
 }
 
+/* Apply the rules inside only on screens at least 860px wide. */
 @media (min-width: 860px) {
+  /* On wide screens, the Register layout becomes a two-column grid. */
   .register-grid {
+    /* Turn the container into a CSS grid. */
     display: grid;
+    /* Two columns: the first is 1.1 parts wide, the second 1 part; minmax(0, ...) lets columns shrink and prevents overflow. */
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    /* 16px gap between the columns. */
     gap: var(--sp-4);
+    /* Cards keep their own height instead of stretching to match each other. */
     align-items: start;
+  /* Close the .register-grid rule. */
   }
+  /* In the grid, the grid gap handles spacing, so the card margin is removed. */
   .register-grid > .card {
+    /* No bottom margin in the two-column layout. */
     margin-bottom: 0;
+  /* Close the card rule. */
   }
+/* Close the 860px media query. */
 }
 
+/* Apply the rules inside only on screens at least 640px wide. */
 @media (min-width: 640px) {
+  /* On tablets and up, the page container gets more breathing room. */
   .wrap {
+    /* 24px padding instead of 16px. */
     padding: var(--sp-5);
+  /* Close the .wrap rule. */
   }
+/* Close the 640px media query. */
 }
 
 /* 4. Components ---------------------------------------------------------- */
 
 /* Brand */
+/* .brand is the <h1> in App.jsx: the logo box. */
 .brand {
+  /* Shrink the box to fit its text instead of stretching across the page. */
   display: inline-block;
+  /* 6px top/bottom and 14px left/right inner space. */
   padding: 6px 14px;
+  /* Always-black background (the same in both colour modes). */
   background: var(--brand-black);
+  /* Thin border in the divider colour. */
   border: 1px solid var(--line);
+  /* Rounded corners. */
   border-radius: 10px;
+  /* Logo text size (22px). */
   font-size: 1.375rem;
+  /* Extra-bold text. */
   font-weight: 800;
+  /* A little extra space between letters. */
   letter-spacing: 0.2px;
+/* Close the .brand rule. */
 }
+/* .k1 is the first span ("Kita") inside .brand. */
 .brand .k1 {
+  /* Orange colour. */
   color: var(--brand-orange);
+/* Close the rule. */
 }
+/* .k2 is the second span ("Kita") inside .brand. */
 .brand .k2 {
+  /* White colour, so the two words contrast on the black box. */
   color: #fff;
+/* Close the rule. */
 }
+/* .tag is the tagline paragraph "cash register for startups". */
 .tag {
+  /* 4px above and nothing on the sides or bottom. */
   margin: var(--sp-1) 0 0;
+  /* Muted text colour. */
   color: var(--mut);
+  /* Small text size. */
   font-size: var(--fs-sm);
+/* Close the .tag rule. */
 }
 
 /* Buttons */
+/* .btn is the standard button class (Settings, Log out, and others). */
 .btn {
+  /* Inline flex lets the icon and text sit side by side and be centred. */
   display: inline-flex;
+  /* Centre the content vertically. */
   align-items: center;
+  /* Centre the content horizontally. */
   justify-content: center;
+  /* 8px between the icon and the label. */
   gap: var(--sp-2);
+  /* At least 44px tall for easy tapping. */
   min-height: var(--tap);
+  /* No vertical padding (min-height controls height); 16px on the sides. */
   padding: 0 var(--sp-4);
+  /* Visible border using the darker control-border colour. */
   border: 1px solid var(--field-line);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Card-coloured background. */
   background: var(--card);
+  /* Main text colour. */
   color: var(--ink);
+  /* Small text size. */
   font-size: var(--fs-sm);
+  /* Semi-bold text. */
   font-weight: 600;
+  /* Smoothly animate background and border colour changes over 0.15 seconds. */
   transition: background-color 0.15s, border-color 0.15s;
+/* Close the .btn rule. */
 }
+/* When the mouse hovers over a .btn. */
 .btn:hover {
+  /* Change the background to the page colour as hover feedback. */
   background: var(--bg);
+/* Close the hover rule. */
 }
+/* .btn-primary is the main call-to-action button style (used together with .btn). */
 .btn-primary {
+  /* Full width of its container. */
   width: 100%;
+  /* 16px space above it. */
   margin-top: var(--sp-4);
+  /* Hide the border by making it transparent (keeps the size the same). */
   border-color: transparent;
+  /* Primary teal background. */
   background: var(--pri);
+  /* Contrasting text colour. */
   color: var(--on-pri);
+  /* Normal-sized text (larger than the default button text). */
   font-size: var(--fs-base);
+  /* Bold text. */
   font-weight: 700;
+/* Close the .btn-primary rule. */
 }
+/* Hover state of the primary button. */
 .btn-primary:hover {
+  /* Darker teal (lighter in dark mode) on hover. */
   background: var(--pri-hover);
+/* Close the rule. */
 }
+/* .btn-danger is used for destructive actions such as clearing data. */
 .btn-danger {
+  /* Red border. */
   border-color: var(--red);
+  /* Red text. */
   color: var(--red);
+/* Close the rule. */
 }
+/* Hover state of the danger button. */
 .btn-danger:hover {
+  /* Light red background on hover. */
   background: var(--red-bg);
+/* Close the rule. */
 }
 
 /* Navigation tabs: static, so they stay where they are in the page flow */
+/* .tabs is the <nav> in App.jsx that holds the four tab buttons (also reused by the auth Log In / Sign Up switch). */
 .tabs {
+  /* Normal document flow (not sticky or fixed), so the tabs scroll with the page. */
   position: static;
+  /* Flexbox lays the tab buttons in a row. */
   display: flex;
+  /* 4px gap between buttons. */
   gap: var(--sp-1);
+  /* 16px space below the tab bar. */
   margin-bottom: var(--sp-4);
+  /* 4px inner space so the buttons do not touch the edge of the bar. */
   padding: var(--sp-1);
+  /* Card-coloured bar background. */
   background: var(--card);
+  /* Thin divider-coloured border. */
   border: 1px solid var(--line);
+  /* Medium rounded corners. */
   border-radius: var(--radius-md);
+  /* Subtle shadow. */
   box-shadow: var(--shadow);
+/* Close the .tabs rule. */
 }
+/* The <button> elements inside .tabs (generated by TABS.map() in App.jsx). */
 .tabs button {
+  /* flex: 1 makes every tab button the same width and fill the bar. */
   flex: 1;
+  /* At least 44px tall. */
   min-height: var(--tap);
+  /* Remove the default button border. */
   border: 0;
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Transparent background for inactive tabs. */
   background: none;
+  /* Muted text for inactive tabs. */
   color: var(--mut);
+  /* Semi-bold text. */
   font-weight: 600;
+  /* Smoothly animate background and text colour changes. */
   transition: background-color 0.15s, color 0.15s;
+/* Close the rule. */
 }
+/* Hover state of a tab button. */
 .tabs button:hover {
+  /* Light background on hover. */
   background: var(--bg);
+  /* Darker text on hover. */
   color: var(--ink);
+/* Close the rule. */
 }
+/* Matches the tab whose aria-current attribute is "page": this is the active tab chosen by the `tab` state in App.jsx. */
 .tabs button[aria-current="page"] {
+  /* Solid teal background for the active tab. */
   background: var(--pri);
+  /* Contrasting text colour. */
   color: var(--on-pri);
+/* Close the rule. */
 }
 
 /* Cards */
+/* .card is the white panel that groups related content. */
 .card {
+  /* No top/side margin; 16px bottom margin to separate stacked cards. */
   margin: 0 0 var(--sp-4);
+  /* 16px inner space. */
   padding: var(--sp-4);
+  /* Card background colour. */
   background: var(--card);
+  /* Thin divider-coloured border. */
   border: 1px solid var(--line);
+  /* Large rounded corners. */
   border-radius: var(--radius-lg);
+  /* Subtle shadow. */
   box-shadow: var(--shadow);
+/* Close the .card rule. */
 }
+/* .card-head is the title row at the top of a card. */
 .card-head {
+  /* Flexbox row. */
   display: flex;
+  /* Let items wrap onto a second line on narrow screens. */
   flex-wrap: wrap;
+  /* Title on the left, actions on the right. */
   justify-content: space-between;
+  /* Centre items vertically. */
   align-items: center;
+  /* 12px gap between items. */
   gap: var(--sp-3);
+  /* 8px space below the header row. */
   margin-bottom: var(--sp-2);
+/* Close the rule. */
 }
+/* The h2 inside .card-head. */
 .card-head h2 {
+  /* Remove the h2's own bottom margin; the header row controls spacing. */
   margin: 0;
+/* Close the rule. */
 }
+/* .actions is a group of buttons (for example in History). */
 .actions {
+  /* Flexbox row. */
   display: flex;
+  /* Wrap onto a new line when space runs out. */
   flex-wrap: wrap;
+  /* 8px gap between buttons. */
   gap: var(--sp-2);
+/* Close the rule. */
 }
+/* .empty is the message shown when a list has no items. */
 .empty {
+  /* Remove default paragraph margins. */
   margin: 0;
+  /* 16px inner space. */
   padding: var(--sp-4);
+  /* Muted text colour. */
   color: var(--mut);
+  /* Centre the text. */
   text-align: center;
+/* Close the rule. */
 }
 
 /* Stat tiles (label + figure) */
+/* .stats is the grid that holds the figure tiles (the <dl> of totals). */
 .stats {
+  /* Use CSS Grid. */
   display: grid;
+  /* Two equal columns by default; minmax(0, 1fr) prevents long numbers from stretching a column. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* 12px gap between tiles. */
   gap: var(--sp-3);
+  /* No top/side margin; 16px at the bottom. */
   margin: 0 0 var(--sp-4);
+/* Close the rule. */
 }
+/* .stat is one tile (label plus figure). */
 .stat {
+  /* Remove default margins. */
   margin: 0;
+  /* 16px inner space. */
   padding: var(--sp-4);
+  /* Card background. */
   background: var(--card);
+  /* Thin border. */
   border: 1px solid var(--line);
+  /* Large rounded corners. */
   border-radius: var(--radius-lg);
+  /* Subtle shadow. */
   box-shadow: var(--shadow);
+/* Close the rule. */
 }
+/* dt is the term (label) inside a stat tile, such as "Revenue". */
 .stat dt {
+  /* Muted colour. */
   color: var(--mut);
+  /* Small size. */
   font-size: var(--fs-sm);
+/* Close the rule. */
 }
+/* dd is the description (the figure) inside a stat tile. */
 .stat dd {
+  /* 2px space above, none elsewhere (browsers indent dd by default, so this resets it). */
   margin: 2px 0 0;
+  /* clamp(min, preferred, max): the size scales with the screen width (5vw) but stays between 18px and 24px. */
   font-size: clamp(1.125rem, 5vw, 1.5rem);
+  /* Bold figures. */
   font-weight: 700;
+  /* Make all digits the same width so columns of numbers line up. */
   font-variant-numeric: tabular-nums;
+  /* Allow very long numbers to break onto a new line instead of overflowing. */
   overflow-wrap: anywhere;
+/* Close the rule. */
 }
+/* A .stats grid that is inside a .card has no bottom margin (the card's padding handles it). */
 .card .stats {
+  /* Remove the bottom margin. */
   margin-bottom: 0;
+/* Close the rule. */
 }
+/* A .stat tile inside a .card is drawn flatter. */
 .card .stat {
+  /* Use the page background so the tile differs from the white card. */
   background: var(--bg);
+  /* No shadow for nested tiles. */
   box-shadow: none;
+/* Close the rule. */
 }
+/* .is-pos marks positive values (profit, sales). */
 .is-pos {
+  /* Green text. */
   color: var(--grn);
+/* Close the rule. */
 }
+/* .is-neg marks negative values (loss, expenses). */
 .is-neg {
+  /* Red text. */
   color: var(--red);
+/* Close the rule. */
 }
 
+/* Apply only on screens at least 640px wide. */
 @media (min-width: 640px) {
+  /* .stats-3 is a modifier class that asks for three columns. */
   .stats-3 {
+    /* Three equal columns. */
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
+/* Apply only on screens at least 720px wide. */
 @media (min-width: 720px) {
+  /* .stats-4 is a modifier class that asks for four columns. */
   .stats-4 {
+    /* Four equal columns. */
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 
 /* Forms */
+/* Style every <label>. */
 label {
+  /* Make the label take a full line above its input. */
   display: block;
+  /* 4px space below the label. */
   margin: 0 0 var(--sp-1);
+  /* Small text. */
   font-size: var(--fs-sm);
+  /* Semi-bold. */
   font-weight: 600;
+/* Close the rule. */
 }
+/* .field wraps one label plus input pair. */
 .field {
+  /* 12px space above each field to separate them. */
   margin-top: var(--sp-3);
+/* Close the rule. */
 }
+/* Selector part 1: every <input>. */
 input,
+/* Selector part 2: every <select>. */
 select {
+  /* Fill the full width of the container. */
   width: 100%;
+  /* At least 44px tall. */
   min-height: var(--tap);
+  /* 10px vertical and 12px horizontal inner space. */
   padding: 10px var(--sp-3);
+  /* Visible control border. */
   border: 1px solid var(--field-line);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Field background colour. */
   background: var(--field);
+  /* Text colour. */
   color: var(--ink);
+/* Close the rule. */
 }
+/* .row2 puts two fields side by side. */
 .row2 {
+  /* CSS Grid. */
   display: grid;
+  /* Two equal columns. */
   grid-template-columns: 1fr 1fr;
+  /* 12px gap. */
   gap: var(--sp-3);
+/* Close the rule. */
 }
+/* Selector part 1: .hint (helper text). */
 .hint,
+/* Selector part 2: .field-error (error text). */
 .field-error {
+  /* 4px above, none elsewhere. */
   margin: var(--sp-1) 0 0;
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+/* Close the shared rule. */
 }
+/* .hint helper text. */
 .hint {
+  /* Muted colour. */
   color: var(--mut);
+/* Close the rule. */
 }
+/* .field-error validation message (the strings returned by validators in validation.js are displayed with it). */
 .field-error {
+  /* Red text. */
   color: var(--red);
+  /* Semi-bold so it stands out. */
   font-weight: 600;
+/* Close the rule. */
 }
 
 /* Amount field: currency symbol sits inside the box */
+/* .amount-wrap is a box that holds the currency symbol and the number input together. */
 .amount-wrap {
+  /* Flexbox row: symbol then input. */
   display: flex;
+  /* Centre items vertically. */
   align-items: center;
+  /* Field background on the wrapper. */
   background: var(--field);
+  /* Control border on the wrapper (the input inside has no border). */
   border: 1px solid var(--field-line);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+/* Close the rule. */
 }
+/* :focus-within is true when anything inside the wrapper (the input) has focus. */
 .amount-wrap:focus-within {
+  /* Draw the focus ring around the whole wrapper. */
   outline: 3px solid var(--pri);
+  /* Offset the ring by 2px. */
   outline-offset: 2px;
+/* Close the rule. */
 }
+/* .is-invalid is added by React when the amount fails validation. */
 .amount-wrap.is-invalid {
+  /* Thick red border. */
   border: 2px solid var(--red);
+/* Close the rule. */
 }
+/* .amount-cur is the currency symbol (the `cur` value from state). */
 .amount-cur {
+  /* 12px space to the left of the symbol. */
   padding-left: var(--sp-3);
+  /* Muted colour. */
   color: var(--mut);
+  /* Large text. */
   font-size: var(--fs-lg);
+  /* Bold. */
   font-weight: 700;
+/* Close the rule. */
 }
+/* The input inside the amount wrapper. */
 .amount-wrap input {
+  /* Slightly taller than normal inputs (52px). */
   min-height: 52px;
+  /* Remove its own border (the wrapper draws it). */
   border: 0;
+  /* Transparent so the wrapper's background shows. */
   background: transparent;
+  /* Remove the default focus outline (the wrapper's :focus-within draws one instead). */
   outline: 0;
+  /* Big text for the amount. */
   font-size: var(--fs-xl);
+  /* Bold. */
   font-weight: 700;
+  /* Equal-width digits. */
   font-variant-numeric: tabular-nums;
+/* Close the rule. */
 }
+/* .form-status shows a confirmation message after saving an entry. */
 .form-status {
+  /* Always reserve one and a half lines of height so the layout does not jump when the text appears. */
   min-height: 1.5em; /* reserve space so the confirmation never shifts the layout */
+  /* 12px above, none elsewhere. */
   margin: var(--sp-3) 0 0;
+  /* Green success colour. */
   color: var(--grn);
+  /* Small text. */
   font-size: var(--fs-sm);
+  /* Semi-bold. */
   font-weight: 600;
+/* Close the rule. */
 }
 
 /* Sale / Expense toggle */
+/* .seg is the two-button segmented control (Sale or Expense). */
 .seg {
+  /* CSS Grid. */
   display: grid;
+  /* Two equal columns. */
   grid-template-columns: 1fr 1fr;
+  /* 8px gap. */
   gap: var(--sp-2);
+/* Close the rule. */
 }
+/* The buttons inside .seg. */
 .seg button {
+  /* Flexbox so the label and the small text can be stacked. */
   display: flex;
+  /* Stack children vertically (column). */
   flex-direction: column;
+  /* Centre horizontally. */
   align-items: center;
+  /* Centre vertically. */
   justify-content: center;
+  /* At least 56px tall. */
   min-height: 56px;
+  /* 8px inner space. */
   padding: var(--sp-2);
+  /* Thick border in the control colour. */
   border: 2px solid var(--field-line);
+  /* Medium rounded corners. */
   border-radius: var(--radius-md);
+  /* Field background. */
   background: var(--field);
+  /* Text colour. */
   color: var(--ink);
+  /* Bold. */
   font-weight: 700;
+  /* Tight line spacing. */
   line-height: 1.25;
+/* Close the rule. */
 }
+/* <small> inside a segment button: the secondary description line. */
 .seg button small {
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+  /* Normal-ish weight. */
   font-weight: 500;
+/* Close the rule. */
 }
+/* aria-pressed="true" is set by React on the currently selected option (driven by state). */
 .seg button[aria-pressed="true"] {
+  /* Border takes the same colour as the text (set by the .is-sale or .is-expense rules below). */
   border-color: currentColor;
+/* Close the rule. */
 }
+/* The small text of the selected button. */
 .seg button[aria-pressed="true"] small {
+  /* Use the same colour as the button text instead of muted. */
   color: inherit;
+/* Close the rule. */
 }
 /* A check mark means "selected" without relying on colour alone */
+/* ::before on the direct child span of the selected button inserts generated content before its text. */
 .seg button[aria-pressed="true"] > span::before {
+  /* \2713 is the check mark character and \00a0 is a non-breaking space after it. */
   content: "\2713\00a0";
+/* Close the rule. */
 }
+/* The selected Sale button (both classes must match). */
 .seg .is-sale[aria-pressed="true"] {
+  /* Light green background. */
   background: var(--grn-bg);
+  /* Green text. */
   color: var(--grn);
+/* Close the rule. */
 }
+/* The selected Expense button. */
 .seg .is-expense[aria-pressed="true"] {
+  /* Light red background. */
   background: var(--red-bg);
+  /* Red text. */
   color: var(--red);
+/* Close the rule. */
 }
 
 /* Entries list (Register + History) */
+/* .tx-list is the <ul> of transactions (the list rendered with .map() over `tx`). */
 .tx-list {
+  /* Remove default list margins. */
   margin: 0;
+  /* Remove default list indentation. */
   padding: 0;
+  /* Remove bullet points. */
   list-style: none;
+/* Close the rule. */
 }
+/* .tx is one transaction row (one item produced per entry by .map()). */
 .tx {
+  /* CSS Grid with three columns. */
   display: grid;
+  /* Column 1 flexible (details), column 2 sized to the amount, column 3 sized to the delete button. */
   grid-template-columns: minmax(0, 1fr) auto auto;
+  /* Centre items vertically. */
   align-items: center;
+  /* 8px gap. */
   gap: var(--sp-2);
+  /* 8px above and below, 0 on the sides. */
   padding: var(--sp-2) 0;
+  /* Thin line separating rows. */
   border-bottom: 1px solid var(--line);
+/* Close the rule. */
 }
+/* :last-child matches the last row in the list. */
 .tx:last-child {
+  /* No separator line after the final row. */
   border-bottom: 0;
+/* Close the rule. */
 }
+/* .tx-title is the main text of a row (for example the entry description). */
 .tx-title {
+  /* Take a full line. */
   display: block;
+  /* Semi-bold. */
   font-weight: 600;
+  /* Break very long words so they cannot overflow. */
   overflow-wrap: anywhere;
+/* Close the rule. */
 }
+/* .tx-meta is the smaller second line (date, category). */
 .tx-meta {
+  /* Take a full line. */
   display: block;
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+/* Close the rule. */
 }
+/* The <time> element inside .tx-meta. */
 .tx-meta time {
+  /* Never break a date across two lines. */
   white-space: nowrap; /* wrap before the date, never inside it */
+/* Close the rule. */
 }
+/* .tx-amount is the money figure of a row. */
 .tx-amount {
+  /* Equal-width digits. */
   font-variant-numeric: tabular-nums;
+  /* Prevent the minus sign from separating from the number. */
   white-space: nowrap; /* never split "-" from the figure */
+/* Close the rule. */
 }
+/* .tx-delete is the small delete button on a row (calls onDelete with the entry id). */
 .tx-delete {
+  /* 44px wide touch target. */
   width: var(--tap);
+  /* 44px tall touch target. */
   height: var(--tap);
+  /* No border. */
   border: 0;
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Transparent background. */
   background: none;
+  /* Muted colour. */
   color: var(--mut);
+  /* Large symbol (such as an x). */
   font-size: 1.5rem;
+  /* Line height of 1 so the symbol is centred. */
   line-height: 1;
+/* Close the rule. */
 }
+/* Hover state of the delete button. */
 .tx-delete:hover {
+  /* Light red background warns that this deletes. */
   background: var(--red-bg);
+  /* Red symbol. */
   color: var(--red);
+/* Close the rule. */
 }
 
 /* Very narrow phones: put the amount under the title so names get the full width */
+/* Apply only on screens up to 400px wide. */
 @media (max-width: 400px) {
+  /* Re-define the row layout for phones. */
   .tx {
+    /* Two columns instead of three. */
     grid-template-columns: minmax(0, 1fr) auto;
+    /* Name the grid cells: the first row is "main del" and the second is "amt del" (the delete button spans both rows). */
     grid-template-areas: "main del" "amt del";
+    /* No vertical gap between the two rows. */
     row-gap: 0;
+  /* Close the rule. */
   }
+  /* The div directly inside a row (the title and meta text wrapper). */
   .tx > div {
+    /* Place it in the "main" area. */
     grid-area: main;
+  /* Close the rule. */
   }
+  /* The amount. */
   .tx-amount {
+    /* Place it in the "amt" area, under the title. */
     grid-area: amt;
+  /* Close the rule. */
   }
+  /* The delete button. */
   .tx-delete {
+    /* Place it in the "del" area on the right, spanning both rows. */
     grid-area: del;
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 
 /* History: entries grouped by month */
+/* The h3 month heading inside each .month-group (History groups entries by month). */
 .month-group h3 {
+  /* 16px above, 0 on the sides, 4px below. */
   margin: var(--sp-4) 0 var(--sp-1);
+  /* 4px space between the heading text and its underline. */
   padding-bottom: var(--sp-1);
+  /* Thicker underline. */
   border-bottom: 2px solid var(--line);
+  /* Muted colour. */
   color: var(--mut);
+  /* Small text. */
   font-size: var(--fs-sm);
+  /* Bold. */
   font-weight: 700;
+/* Close the rule. */
 }
 
 /* Guidance tips: colour + a text label, so meaning never depends on colour */
+/* .tips is the <ul> of advice messages (built from the [level, message] pairs that buildTips() in finance.js returns, likely rendered with .map()). */
 .tips {
+  /* CSS Grid stacks the tips vertically. */
   display: grid;
+  /* 8px gap between tips. */
   gap: var(--sp-2);
+  /* Remove default margin. */
   margin: 0;
+  /* Remove default indentation. */
   padding: 0;
+  /* Remove bullets. */
   list-style: none;
+/* Close the rule. */
 }
+/* .tip is one advice message. */
 .tip {
+  /* 12px inner space. */
   padding: var(--sp-3);
+  /* Coloured left bar; uses --tip if defined, otherwise falls back to --pri. */
   border-left: 4px solid var(--tip, var(--pri));
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Background uses --tip-bg if defined, otherwise the soft teal. */
   background: var(--tip-bg, var(--pri-soft));
+  /* Small text. */
   font-size: var(--fs-sm);
+/* Close the rule. */
 }
+/* .tip-label is the small uppercase word at the top of a tip (for example the level). */
 .tip-label {
+  /* Take its own line. */
   display: block;
+  /* 2px space below. */
   margin-bottom: 2px;
+  /* Use the tip colour, or fall back to teal text. */
   color: var(--tip, var(--pri-text));
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+  /* Bold. */
   font-weight: 700;
+  /* Slight letter spacing for uppercase text. */
   letter-spacing: 0.04em;
+  /* Display the text in capital letters. */
   text-transform: uppercase;
+/* Close the rule. */
 }
+/* A tip with the extra class "good" (matches the 'good' level from buildTips). */
 .tip.good {
+  /* Define --tip as green for this tip only (the .tip rule above reads it). */
   --tip: var(--grn);
+  /* Define --tip-bg as light green. */
   --tip-bg: var(--grn-bg);
+/* Close the rule. */
 }
+/* A tip with the class "warn" (the 'warn' level). */
 .tip.warn {
+  /* Amber accent colour. */
   --tip: var(--amb);
+  /* Light amber background. */
   --tip-bg: var(--amb-bg);
+/* Close the rule. */
 }
+/* A tip with the class "bad" (the 'bad' level). */
 .tip.bad {
+  /* Red accent colour. */
   --tip: var(--red);
+  /* Light red background. */
   --tip-bg: var(--red-bg);
+/* Close the rule. */
 }
 
 /* Revenue vs expenses chart */
+/* .chart-scale is the small text showing the maximum value of the chart. */
 .chart-scale {
+  /* 4px space below, none elsewhere. */
   margin: 0 0 var(--sp-1);
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+  /* Right-aligned. */
   text-align: right;
+/* Close the rule. */
 }
+/* .chart-plot is the drawing area that holds one column per month. */
 .chart-plot {
+  /* Flexbox row of month columns. */
   display: flex;
+  /* 8px gap between columns. */
   gap: var(--sp-2);
+  /* Fixed chart height of 190px. */
   height: 190px;
+  /* Baseline (the x-axis line) under the columns. */
   border-bottom: 1px solid var(--field-line);
   /* faint gridlines at 25% steps */
+  /* A gradient that draws a 1px line at the top and then transparent, used as a repeating gridline image. */
   background-image: linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  /* Repeat that image every 25% of the height, giving four horizontal gridlines. */
   background-size: 100% 25%;
+/* Close the rule. */
 }
+/* .chart-col is one month's column. */
 .chart-col {
+  /* Flexbox container. */
   display: flex;
+  /* Share the available width equally among columns. */
   flex: 1;
+  /* Stack content top to bottom. */
   flex-direction: column;
+  /* Push the content to the bottom so bars grow upward from the baseline. */
   justify-content: flex-end;
+  /* Allow the column to shrink below its content width. */
   min-width: 0;
+  /* Fill the full height of the plot. */
   height: 100%;
+/* Close the rule. */
 }
+/* .chart-bars holds the two bars (revenue and expenses) of a month. */
 .chart-bars {
+  /* Flexbox row. */
   display: flex;
+  /* Fill the column height. */
   flex: 1;
+  /* Align bars to the bottom. */
   align-items: flex-end;
+  /* Centre the pair horizontally. */
   justify-content: center;
+  /* 3px gap between the two bars. */
   gap: 3px;
+/* Close the rule. */
 }
+/* .bar is a single bar; its height is likely set inline from the data in the component. */
 .bar {
+  /* Make it a block so width and height apply. */
   display: block;
+  /* 40% of the column width. */
   width: 40%;
+  /* Never wider than 32px. */
   max-width: 32px;
+  /* At least 2px tall so tiny values are still visible. */
   min-height: 2px;
+  /* Round only the top corners. */
   border-radius: 4px 4px 0 0;
+/* Close the rule. */
 }
+/* Selector part 1: the revenue bar. */
 .bar-rev,
+/* Selector part 2: the revenue legend swatch. */
 .swatch-rev {
+  /* Green fill. */
   background: var(--grn);
+/* Close the rule. */
 }
+/* Selector part 1: the expense bar. */
 .bar-exp,
+/* Selector part 2: the expense legend swatch. */
 .swatch-exp {
+  /* Red fill. */
   background-color: var(--red);
+  /* Add diagonal stripes on top of the red: 3px stripe, 4px gap, repeating at 135 degrees; this makes expenses distinguishable without colour. */
   background-image: repeating-linear-gradient(135deg, var(--stripe) 0 3px, transparent 3px 7px);
+/* Close the rule. */
 }
+/* .chart-labels is the row of month names below the plot. */
 .chart-labels {
+  /* Flexbox row. */
   display: flex;
+  /* 8px gap, matching the plot columns so labels line up. */
   gap: var(--sp-2);
+  /* 4px space above. */
   margin-top: var(--sp-1);
+/* Close the rule. */
 }
+/* Each label span. */
 .chart-labels span {
+  /* Equal widths, matching the columns. */
   flex: 1;
+  /* Allow shrinking. */
   min-width: 0;
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+  /* Centre the text under its column. */
   text-align: center;
+/* Close the rule. */
 }
+/* .chart-legend explains which colour means what. */
 .chart-legend {
+  /* Flexbox row. */
   display: flex;
+  /* Wrap on narrow screens. */
   flex-wrap: wrap;
+  /* 16px gap between legend items. */
   gap: var(--sp-4);
+  /* 12px above, none elsewhere. */
   margin: var(--sp-3) 0 0;
+  /* Muted colour. */
   color: var(--mut);
+  /* Small text. */
   font-size: var(--fs-sm);
+/* Close the rule. */
 }
+/* Each legend item span. */
 .chart-legend span {
+  /* Inline flex so the swatch and text sit side by side. */
   display: inline-flex;
+  /* Centre vertically. */
   align-items: center;
+  /* 6px gap between the swatch and the text. */
   gap: 6px;
+/* Close the rule. */
 }
+/* .swatch is the small coloured square in the legend. */
 .swatch {
+  /* 14px wide. */
   width: 14px;
+  /* 14px tall. */
   height: 14px;
+  /* Slightly rounded corners. */
   border-radius: 3px;
+/* Close the rule. */
 }
+/* .chart-details is the <details> element holding the text/table version of the chart. */
 .chart-details {
+  /* 12px space above. */
   margin-top: var(--sp-3);
+  /* Small text. */
   font-size: var(--fs-sm);
+/* Close the rule. */
 }
+/* The clickable <summary> line of the <details>. */
 .chart-details summary {
+  /* Inline-block so padding works while keeping it as wide as its text. */
   display: inline-block;
+  /* 8px above and below to enlarge the click area. */
   padding: var(--sp-2) 0;
+  /* Teal link-like colour. */
   color: var(--pri-text);
+  /* Semi-bold. */
   font-weight: 600;
+  /* Pointer cursor. */
   cursor: pointer;
+/* Close the rule. */
 }
+/* .table-wrap wraps the data table. */
 .table-wrap {
+  /* Allow horizontal scrolling if the table is too wide for a phone. */
   overflow-x: auto;
+/* Close the rule. */
 }
+/* The table inside the wrapper. */
 .table-wrap table {
+  /* Full width. */
   width: 100%;
+  /* Merge neighbouring cell borders into single lines. */
   border-collapse: collapse;
+  /* Equal-width digits. */
   font-variant-numeric: tabular-nums;
+/* Close the rule. */
 }
+/* Selector part 1: header cells. */
 .table-wrap th,
+/* Selector part 2: data cells. */
 .table-wrap td {
+  /* 8px inner space. */
   padding: var(--sp-2);
+  /* Thin line under each cell. */
   border-bottom: 1px solid var(--line);
+  /* Left-aligned text. */
   text-align: left;
+/* Close the rule. */
 }
+/* .num marks number columns. */
 .table-wrap .num {
+  /* Right-align numbers so digits line up. */
   text-align: right;
+/* Close the rule. */
 }
 
+/* .note is the small disclaimer text (used in the footer in App.jsx). */
 .note {
+  /* 16px above, none elsewhere. */
   margin: var(--sp-4) 0 0;
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+/* Close the rule. */
 }
+/* A .note inside a card. */
 .card .note {
+  /* No bottom margin, so the card padding is not doubled. */
   margin-bottom: 0;
+/* Close the rule. */
 }
 
 /* 4b. Authentication ------------------------------------------------------ */
 
 /* Header: name + log out sit beside Settings and wrap on narrow phones */
+/* .header-actions is the div in App.jsx with the user name and the Settings / Log out buttons. */
 .header-actions {
+  /* Flexbox row. */
   display: flex;
+  /* Wrap onto a second line on narrow phones. */
   flex-wrap: wrap;
+  /* Centre items vertically. */
   align-items: center;
+  /* Align items to the right end. */
   justify-content: flex-end;
+  /* 8px gap. */
   gap: var(--sp-2);
+/* Close the rule. */
 }
+/* .user-name is the span in App.jsx showing user.name. */
 .user-name {
+  /* Hidden by default (small phones) to save space. */
   display: none;
+  /* Never wider than 14rem. */
   max-width: 14rem;
+  /* Hide text that exceeds the width. */
   overflow: hidden;
+  /* Muted colour. */
   color: var(--mut);
+  /* Small text. */
   font-size: var(--fs-sm);
+  /* Semi-bold. */
   font-weight: 600;
+  /* Show "..." when the name is cut off. */
   text-overflow: ellipsis;
+  /* Keep on a single line (required for the ellipsis to work). */
   white-space: nowrap;
+/* Close the rule. */
 }
+/* Apply only on screens at least 640px wide. */
 @media (min-width: 640px) {
+  /* Re-show the user name. */
   .user-name {
+    /* Display inline, so the name appears from tablet width upward. */
     display: inline;
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 
 /* Page layout: one column on phones/tablets, form + benefits side by side on desktop */
+/* .auth-page is the wrapper of the login / sign-up screen. */
 .auth-page {
+  /* Narrow 460px column on small screens. */
   max-width: 460px;
+  /* Centre horizontally. */
   margin: 0 auto;
+/* Close the rule. */
 }
+/* .auth-layout holds the form card and the benefits panel. */
 .auth-layout {
+  /* CSS Grid (a single column by default). */
   display: grid;
+  /* 16px gap. */
   gap: var(--sp-4);
+/* Close the rule. */
 }
+/* .auth-aside is the benefits panel. */
 .auth-aside {
+  /* Hidden on small screens. */
   display: none;
+/* Close the rule. */
 }
+/* Paragraphs inside the aside. */
 .auth-aside p {
+  /* 16px space below. */
   margin: 0 0 var(--sp-4);
+  /* Muted colour. */
   color: var(--mut);
+/* Close the rule. */
 }
+/* The h2 inside the aside. */
 .auth-aside h2 {
+  /* Large size. */
   font-size: var(--fs-lg);
+  /* 8px space below. */
   margin-bottom: var(--sp-2);
+/* Close the rule. */
 }
+/* .auth-benefits is the list of benefits. */
 .auth-benefits {
+  /* CSS Grid stacks the items. */
   display: grid;
+  /* 12px gap. */
   gap: var(--sp-3);
+  /* Remove default margin. */
   margin: 0;
+  /* Remove default indentation. */
   padding: 0;
+  /* Remove bullets (a check mark is added below). */
   list-style: none;
+  /* Semi-bold. */
   font-weight: 600;
+/* Close the rule. */
 }
+/* Each benefit item. */
 .auth-benefits li {
+  /* Flexbox row: check mark then text. */
   display: flex;
+  /* 12px gap. */
   gap: var(--sp-3);
+/* Close the rule. */
 }
+/* Generated content placed before each benefit. */
 .auth-benefits li::before {
+  /* \2713 is the check mark character. */
   content: "\2713";
+  /* Green check mark. */
   color: var(--grn);
+  /* Extra-bold. */
   font-weight: 800;
+/* Close the rule. */
 }
+/* .auth-note is small text under the form. */
 .auth-note {
+  /* 12px space above. */
   margin-top: var(--sp-3);
+  /* Centred. */
   text-align: center;
+/* Close the rule. */
 }
 
+/* Apply only on screens at least 640px wide. */
 @media (min-width: 640px) {
+  /* Adjust the auth page. */
   .auth-page {
+    /* Add 24px of space above the form on tablets. */
     padding-top: var(--sp-5);
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
+/* Apply only on screens at least 860px wide. */
 @media (min-width: 860px) {
+  /* Wider auth page on desktops. */
   .auth-page {
+    /* Allow up to 920px so two columns fit. */
     max-width: 920px;
+  /* Close the rule. */
   }
+  /* Two-column layout on desktops. */
   .auth-layout {
+    /* Two equal columns. */
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* 24px gap. */
     gap: var(--sp-5);
+    /* Align both columns to the top. */
     align-items: start;
+  /* Close the rule. */
   }
+  /* Show the benefits panel on desktops. */
   .auth-aside {
+    /* Make it visible. */
     display: block;
+    /* A negative order moves it before the form, so it appears on the left. */
     order: -1;
+    /* 24px inner space. */
     padding: var(--sp-5);
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 
 /* Log In / Sign Up switch reuses .tabs, but sits inside the card and is not sticky */
+/* An element with BOTH classes tabs and auth-tabs; higher specificity than .tabs alone, so these values win. */
 .tabs.auth-tabs {
+  /* Normal document flow (not sticky). */
   position: static;
+  /* 24px space below. */
   margin-bottom: var(--sp-5);
+  /* Page-coloured bar, since it sits inside a white card. */
   background: var(--bg);
+  /* No shadow. */
   box-shadow: none;
+/* Close the rule. */
 }
+/* Hover state for buttons in the auth tabs. */
 .auth-tabs button:hover {
+  /* Use the divider colour (a bit darker than the bar). */
   background: var(--line);
+/* Close the rule. */
 }
+/* Selector part 1: the active auth tab. */
 .auth-tabs button[aria-current="page"],
+/* Selector part 2: the active auth tab while hovered. */
 .auth-tabs button[aria-current="page"]:hover {
+  /* Keep the teal active background even on hover. */
   background: var(--pri);
+  /* Contrasting text. */
   color: var(--on-pri);
+/* Close the rule. */
 }
 
+/* .auth-title is the heading of the form. */
 .auth-title {
+  /* Large size. */
   font-size: var(--fs-lg);
+  /* 4px space below. */
   margin-bottom: var(--sp-1);
+/* Close the rule. */
 }
+/* .auth-sub is the line of text under the heading. */
 .auth-sub {
+  /* 8px space below. */
   margin: 0 0 var(--sp-2);
+  /* Muted colour. */
   color: var(--mut);
+  /* Small text. */
   font-size: var(--fs-sm);
+/* Close the rule. */
 }
+/* .auth-fieldset is a <fieldset> used to group the form controls. */
 .auth-fieldset {
+  /* Let a fieldset shrink (browsers otherwise give it a large minimum width). */
   min-width: 0;
+  /* Remove default margin. */
   margin: 0;
+  /* Remove default padding. */
   padding: 0;
+  /* Remove the default border. */
   border: 0;
+/* Close the rule. */
 }
+/* .auth-callout is a highlighted message block in the form. */
 .auth-callout {
+  /* 12px space above. */
   margin-top: var(--sp-3);
+/* Close the rule. */
 }
+/* .auth-back is the "Back to log in" area. */
 .auth-back {
+  /* 12px space above. */
   margin-top: var(--sp-3);
+  /* Centred. */
   text-align: center;
+/* Close the rule. */
 }
 
 /* Inputs flagged invalid (the amount/password wrappers draw their own border) */
+/* Matches inputs whose aria-invalid attribute is "true" (set by React when a validator returns an error message). */
 input[aria-invalid="true"] {
+  /* Thick red border. */
   border: 2px solid var(--red);
+/* Close the rule. */
 }
+/* Checkboxes need a different treatment because their border cannot be changed. */
 input[type="checkbox"][aria-invalid="true"] {
+  /* Red outline instead of a border. */
   outline: 2px solid var(--red);
+  /* Offset by 2px. */
   outline-offset: 2px;
+/* Close the rule. */
 }
 
 /* Password field: show/hide button sits inside the box */
+/* .pw-wrap holds the password input and the show/hide button. */
 .pw-wrap {
+  /* Flexbox row. */
   display: flex;
+  /* Centre vertically. */
   align-items: center;
+  /* Field background on the wrapper. */
   background: var(--field);
+  /* Control border on the wrapper. */
   border: 1px solid var(--field-line);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+/* Close the rule. */
 }
+/* Focus ring when the input inside has focus. */
 .pw-wrap:focus-within {
+  /* Teal ring around the whole wrapper. */
   outline: 3px solid var(--pri);
+  /* Offset by 2px. */
   outline-offset: 2px;
+/* Close the rule. */
 }
+/* Invalid state (class added by React). */
 .pw-wrap.is-invalid {
+  /* Thick red border. */
   border: 2px solid var(--red);
+/* Close the rule. */
 }
+/* Selector part 1: the input inside the wrapper. */
 .pw-wrap input,
+/* Selector part 2: same input when invalid (this overrides the generic red-border rule above). */
 .pw-wrap input[aria-invalid="true"] {
+  /* Allow the input to shrink inside the flex row. */
   min-width: 0;
+  /* No border of its own (the wrapper draws it). */
   border: 0;
+  /* Transparent background. */
   background: transparent;
+  /* No default outline (the wrapper draws the focus ring). */
   outline: 0;
+/* Close the rule. */
 }
+/* .pw-toggle is the show/hide password button. */
 .pw-toggle {
+  /* Inline flex to centre the icon. */
   display: inline-flex;
+  /* Do not grow or shrink. */
   flex: none;
+  /* Centre vertically. */
   align-items: center;
+  /* Centre horizontally. */
   justify-content: center;
+  /* 44px wide touch target. */
   width: var(--tap);
+  /* 44px tall touch target. */
   height: var(--tap);
+  /* No border. */
   border: 0;
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Transparent background. */
   background: none;
+  /* Muted icon colour. */
   color: var(--mut);
+  /* Smoothly animate colour changes. */
   transition: background-color 0.15s, color 0.15s;
+/* Close the rule. */
 }
+/* Hover state of the toggle. */
 .pw-toggle:hover {
+  /* Light background. */
   background: var(--bg);
+  /* Darker icon. */
   color: var(--ink);
+/* Close the rule. */
 }
 
 /* Checkbox rows ("Remember me", "I agree") */
+/* .check is a label that wraps a checkbox and its text. */
 .check {
+  /* Flexbox row. */
   display: flex;
+  /* Align to the top, so multi-line text starts level with the box. */
   align-items: flex-start;
+  /* 12px gap. */
   gap: var(--sp-3);
+  /* Remove the default label margin. */
   margin: 0;
+  /* 11px above and below enlarges the click area. */
   padding: 11px 0;
+  /* Normal-ish weight. */
   font-weight: 500;
+  /* Pointer cursor. */
   cursor: pointer;
+/* Close the rule. */
 }
+/* The checkbox inside .check. */
 .check input {
+  /* Do not grow or shrink. */
   flex: none;
+  /* 22px wide. */
   width: 22px;
+  /* Cancel the generic 44px minimum height for inputs. */
   min-height: 0;
+  /* 22px tall. */
   height: 22px;
+  /* Remove margins. */
   margin: 0;
+  /* Remove padding. */
   padding: 0;
+  /* Colour the checked checkbox with the primary teal. */
   accent-color: var(--pri);
+/* Close the rule. */
 }
+/* .auth-row is the row holding "Remember me" and "Forgot password?". */
 .auth-row {
+  /* Flexbox row. */
   display: flex;
+  /* Wrap on narrow screens. */
   flex-wrap: wrap;
+  /* Centre vertically. */
   align-items: center;
+  /* Spread the two items to opposite ends. */
   justify-content: space-between;
+  /* 4px row gap and 12px column gap. */
   gap: var(--sp-1) var(--sp-3);
+  /* 8px space above. */
   margin-top: var(--sp-2);
+/* Close the rule. */
 }
+/* A .check inside .auth-row. */
 .auth-row .check {
+  /* Remove the extra padding. */
   padding: 0;
+  /* Still at least 44px tall for touch. */
   min-height: var(--tap);
+  /* Centre vertically. */
   align-items: center;
+/* Close the rule. */
 }
 
 /* Text-style button ("Forgot password?", "Back to log in") */
+/* .link-btn is a button styled like a link. */
 .link-btn {
+  /* At least 44px tall. */
   min-height: var(--tap);
+  /* 8px horizontal padding. */
   padding: 0 var(--sp-2);
+  /* No border. */
   border: 0;
+  /* Rounded corners (visible on hover). */
   border-radius: var(--radius-sm);
+  /* Transparent background. */
   background: none;
+  /* Teal link colour. */
   color: var(--pri-text);
+  /* Small text. */
   font-size: var(--fs-sm);
+  /* Semi-bold. */
   font-weight: 600;
+  /* Underlined, like a link. */
   text-decoration: underline;
+  /* Move the underline 3px away from the text. */
   text-underline-offset: 3px;
+/* Close the rule. */
 }
+/* Hover state. */
 .link-btn:hover {
+  /* Soft teal background. */
   background: var(--pri-soft);
+/* Close the rule. */
 }
 
 /* Password strength: bar segments plus a text label */
+/* .strength is the strength meter container (the score from passwordStrength() is likely passed to data-level). */
 .strength {
+  /* Local variable: the default level colour is red. */
   --lvl: var(--red);
+  /* Flexbox row: bar then label. */
   display: flex;
+  /* Centre vertically. */
   align-items: center;
+  /* 12px gap. */
   gap: var(--sp-3);
+  /* 8px space above. */
   margin-top: var(--sp-2);
+/* Close the rule. */
 }
+/* data-level="2" means a Fair password. */
 .strength[data-level="2"] {
+  /* Change the level colour to amber. */
   --lvl: var(--amb);
+/* Close the rule. */
 }
+/* Selector part 1: data-level="3" (Good). */
 .strength[data-level="3"],
+/* Selector part 2: data-level="4" (Strong). */
 .strength[data-level="4"] {
+  /* Change the level colour to green. */
   --lvl: var(--grn);
+/* Close the rule. */
 }
+/* .strength-bar holds the four segments. */
 .strength-bar {
+  /* CSS Grid. */
   display: grid;
+  /* Take the remaining width. */
   flex: 1;
+  /* Four equal columns, one per segment. */
   grid-template-columns: repeat(4, 1fr);
+  /* 4px gap. */
   gap: var(--sp-1);
+/* Close the rule. */
 }
+/* Each <i> element is one segment. */
 .strength-bar i {
+  /* 6px tall. */
   height: 6px;
+  /* Rounded ends. */
   border-radius: 3px;
+  /* Grey by default (not filled). */
   background: var(--line);
+/* Close the rule. */
 }
+/* A segment with the class "on" (probably added to the first `score` segments). */
 .strength-bar i.on {
+  /* Fill it with the level colour. */
   background: var(--lvl);
+/* Close the rule. */
 }
+/* .strength-label is the word such as Weak or Strong. */
 .strength-label {
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+  /* Semi-bold. */
   font-weight: 600;
+/* Close the rule. */
 }
 
 /* Terms text */
+/* .terms-details is the <details> element holding the Terms and Conditions. */
 .terms-details {
+  /* No extra space above. */
   margin-top: 0;
+/* Close the rule. */
 }
+/* .terms-body is the scrollable terms text. */
 .terms-body {
+  /* Limit the height to 168px. */
   max-height: 168px;
+  /* Scroll vertically when the text is longer. */
   overflow-y: auto;
+  /* 12px inner space. */
   padding: var(--sp-3);
+  /* Page-coloured background. */
   background: var(--bg);
+  /* Thin border. */
   border: 1px solid var(--line);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Muted colour. */
   color: var(--mut);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+/* Close the rule. */
 }
+/* Paragraphs inside the terms. */
 .terms-body p {
+  /* 8px space below. */
   margin: 0 0 var(--sp-2);
+/* Close the rule. */
 }
+/* The last paragraph. */
 .terms-body p:last-child {
+  /* No space after the final paragraph. */
   margin-bottom: 0;
+/* Close the rule. */
 }
 
 /* Settings: account + admin sections */
+/* .settings-section is a section in the Settings panel. */
 .settings-section {
+  /* 24px space above. */
   margin-top: var(--sp-5);
+  /* 16px space between the divider line and the content. */
   padding-top: var(--sp-4);
+  /* Divider line above the section. */
   border-top: 1px solid var(--line);
+/* Close the rule. */
 }
+/* The h3 inside a section. */
 .settings-section h3 {
+  /* 4px space below. */
   margin-bottom: var(--sp-1);
+  /* Medium size. */
   font-size: var(--fs-md);
+  /* Bold. */
   font-weight: 700;
+/* Close the rule. */
 }
+/* .role-badge is the small label showing the account role. */
 .role-badge {
+  /* Inline-block so padding works. */
   display: inline-block;
+  /* 8px space to the left. */
   margin-left: var(--sp-2);
+  /* 2px vertical and 8px horizontal inner space. */
   padding: 2px var(--sp-2);
+  /* Rounded corners. */
   border-radius: var(--radius-sm);
+  /* Soft teal background. */
   background: var(--pri-soft);
+  /* Teal text. */
   color: var(--pri-text);
+  /* Extra-small text. */
   font-size: var(--fs-xs);
+  /* Bold. */
   font-weight: 700;
+/* Close the rule. */
 }
 
 /* Submit button: disabled + loading */
+/* :disabled matches any button with the disabled attribute (set by React while a request is running). */
 .btn:disabled {
+  /* Show the "not allowed" cursor. */
   cursor: not-allowed;
+/* Close the rule. */
 }
+/* Selector part 1: the disabled primary button. */
 .btn-primary:disabled,
+/* Selector part 2: the disabled primary button on hover (to cancel the hover colour). */
 .btn-primary:disabled:hover {
+  /* Keep the normal teal. */
   background: var(--pri);
+  /* Make it 25% transparent to look disabled. */
   opacity: 0.75;
+/* Close the rule. */
 }
+/* .spinner is the small loading circle. */
 .spinner {
+  /* 18px wide. */
   width: 18px;
+  /* 18px tall. */
   height: 18px;
+  /* A 2px ring that takes the text colour. */
   border: 2px solid currentColor;
+  /* Make the right side transparent, creating the gap that makes the ring look like it spins. */
   border-right-color: transparent;
+  /* Make it a perfect circle. */
   border-radius: 50%;
+  /* Run the "spin" animation: 0.7 seconds, constant speed, forever. */
   animation: spin 0.7s linear infinite;
+/* Close the rule. */
 }
+/* Define the keyframes for the spin animation. */
 @keyframes spin {
+  /* The animation ends at this state (the start is the element's normal state). */
   to {
+    /* Rotate a full circle. */
     transform: rotate(360deg);
+  /* Close the "to" step. */
   }
+/* Close the keyframes. */
 }
+/* Apply only if the user asked their system to reduce motion. */
 @media (prefers-reduced-motion: reduce) {
+  /* The spinner is still shown but does not animate. */
   .spinner {
+    /* Turn off the animation. */
     animation: none;
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 
 /* 5. Utilities + motion -------------------------------------------------- */
+/* .sr-only hides content visually but keeps it readable for screen readers. */
 .sr-only {
+  /* Take it out of the layout flow. */
   position: absolute;
+  /* Shrink to 1px wide. */
   width: 1px;
+  /* Shrink to 1px tall. */
   height: 1px;
+  /* Pull it inward so it takes no space. */
   margin: -1px;
+  /* No padding. */
   padding: 0;
+  /* Hide anything that overflows. */
   overflow: hidden;
+  /* Clip the visible area to nothing. */
   clip: rect(0 0 0 0);
+  /* Keep the text on one line. */
   white-space: nowrap;
+  /* No border. */
   border: 0;
+/* Close the rule. */
 }
 
+/* Apply only if the user prefers reduced motion. */
 @media (prefers-reduced-motion: reduce) {
+  /* The universal selector targets every element. */
   * {
+    /* Disable all transitions; !important overrides the transition rules elsewhere in this file. */
     transition: none !important;
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 
 /* Weekly cash-flow budget */
+/* .budget-week-controls is the row with the previous button, date picker and next button (one-line rule). */
 .budget-week-controls {
+  /* CSS Grid. */
   display: grid;
+  /* Three columns: auto-sized, a flexible one at least 150px wide, and auto-sized. */
   grid-template-columns: auto minmax(150px, 1fr) auto;
+  /* Align the items to the bottom, so the buttons line up with the input. */
   align-items: end;
+  /* 8px gap. */
   gap: var(--sp-2);
+  /* 16px space above. */
   margin-top: var(--sp-4);
+/* Close the rule. */
 }
+/* One-line rule: buttons in the week controls never wrap their text. */
 .budget-week-controls .btn { white-space: nowrap; }
+/* One-line rule: the date field removes the generic .field top margin. */
 .budget-date-field { margin: 0; }
+/* One-line rule: the line that shows the week's date range (spacing, muted colour, small bold text). */
 .budget-range { margin: var(--sp-3) 0 0; color: var(--mut); font-size: var(--fs-sm); font-weight: 600; }
+/* One-line rule: the starting-cash field is limited to 440px wide. */
 .budget-starting-cash { max-width: 440px; }
+/* One-line rule: the budget stat tiles get 16px space above. */
 .budget-stats { margin-top: var(--sp-4); }
+/* One-line rule: the big projected figure; its size scales with the screen from 1.8rem to 2.5rem, bold, equal-width digits, and breaks when too long. */
 .budget-projection { margin: 0; font-size: clamp(1.8rem, 7vw, 2.5rem); font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* One-line rule: the red warning box (spacing, inner space, rounded corners, light red background, red bold text). */
 .budget-warning { margin: var(--sp-3) 0 0; padding: var(--sp-3); border-radius: var(--radius-sm); background: var(--red-bg); color: var(--red); font-weight: 700; }
+/* One-line rule: spacing around the income/expense toggle in the budget form. */
 .budget-type-toggle { margin: var(--sp-3) 0 var(--sp-4); }
+/* One-line rule: space above the form's action buttons. */
 .budget-form-actions { margin-top: var(--sp-4); }
+/* One-line rule: inside the actions, the primary button is auto width (not 100%) and has no top margin. */
 .budget-form-actions .btn-primary { width: auto; margin-top: 0; }
+/* One-line rule: 8px space above the list of budget entries. */
 .budget-list { margin-top: var(--sp-2); }
+/* One-line rule: one budget entry row, laid out as a three-column grid (details, and two auto columns) with a divider line below. */
 .budget-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--line); }
+/* One-line rule: no divider after the last entry. */
 .budget-entry:last-child { border-bottom: 0; }
+/* One-line rule: the main text part may shrink (min-width: 0 prevents overflow). */
 .budget-entry-main { min-width: 0; }
+/* One-line rule: the entry's action buttons are pushed to the right. */
 .budget-entry-actions { justify-content: flex-end; }
+/* One-line rule: smaller buttons inside the entry actions (36px tall, 8px side padding). */
 .budget-entry-actions .btn { min-height: 36px; padding: 0 var(--sp-2); }
+/* One-line rule: the budget page's card headers align their content to the top. */
 .budget-page .card-head { align-items: flex-start; }
+/* Apply only on screens up to 600px wide. */
 @media (max-width: 600px) {
+  /* Week controls become two equal columns. */
   .budget-week-controls { grid-template-columns: 1fr 1fr; }
+  /* The date field spans the full first row (from the first to the last grid line). */
   .budget-date-field { grid-column: 1 / -1; grid-row: 1; }
+  /* An entry becomes two columns with a smaller gap. */
   .budget-entry { grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2); }
+  /* The action buttons span the whole row below and align left. */
   .budget-entry-actions { grid-column: 1 / -1; justify-content: flex-start; }
+/* Close the 600px media query. */
 }
+/* Apply only on screens up to 400px wide. */
 @media (max-width: 400px) {
+  /* Smaller buttons and text so the week controls fit very narrow phones. */
   .budget-week-controls .btn { padding: 0 var(--sp-2); font-size: var(--fs-xs); }
+/* Close the 400px media query. */
 }
 
 /* History: search, filters and sort.
@@ -1117,52 +2168,95 @@ input[type="checkbox"][aria-invalid="true"] {
    so typing in the search box or changing a filter can never push things around. */
 
 /* The filter controls sit in a plain CSS grid: one column on phones... */
+/* .filter-bar holds the search box and dropdowns in History. */
 .filter-bar {
+  /* CSS Grid. */
   display: grid;
+  /* One full-width column on phones. */
   grid-template-columns: 1fr;
+  /* 12px gap. */
   gap: var(--sp-3);
+  /* 12px space above. */
   margin-top: var(--sp-3);
+/* Close the rule. */
 }
+/* Labels inside the filter bar. */
 .filter-bar label {
+  /* 4px space below. */
   margin-bottom: var(--sp-1);
+/* Close the rule. */
 }
 /* ...and from tablet width up, the search box takes the full first row
    and the three dropdowns share the second row. */
+/* Apply only on screens at least 640px wide. */
 @media (min-width: 640px) {
+  /* Re-define the filter grid. */
   .filter-bar {
+    /* Three equal columns. */
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Close the rule. */
   }
+  /* The search field. */
   .filter-search {
+    /* Span from the first to the last column line, taking the whole first row. */
     grid-column: 1 / -1;
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
+/* Apply only on screens at least 860px wide. */
 @media (min-width: 860px) {
+  /* Same three-column filter grid kept for desktops. */
   .filter-bar {
+    /* Three equal columns. */
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Close the rule. */
   }
+/* Close the media query. */
 }
 /* Result count + "Clear filters" button. The button is always present (only disabled),
    so this row keeps the same height whether or not a filter is active. */
+/* .filter-status-row holds the result count text and the Clear filters button. */
 .filter-status-row {
+  /* Flexbox row. */
   display: flex;
+  /* Wrap on narrow screens. */
   flex-wrap: wrap;
+  /* Centre vertically. */
   align-items: center;
+  /* Count on the left, button on the right. */
   justify-content: space-between;
+  /* 8px gap. */
   gap: var(--sp-2);
+  /* 12px space above. */
   margin-top: var(--sp-3);
+/* Close the rule. */
 }
+/* .filter-status is the result-count text. */
 .filter-status {
+  /* Constant height, so the text changing never shifts the layout. */
   min-height: 1.5em; /* constant height: the count text changing never shifts the layout */
+  /* Remove default margin. */
   margin: 0;
+  /* Muted colour. */
   color: var(--mut);
+  /* Small text. */
   font-size: var(--fs-sm);
+  /* Semi-bold. */
   font-weight: 600;
+/* Close the rule. */
 }
+/* .history-results wraps the filtered list. */
 .history-results {
+  /* Always at least 200px tall, so the card does not collapse when filters leave no results. */
   min-height: 200px; /* keeps the card the same size when filters empty the list */
+/* Close the rule. */
 }
 /* Greyed-out look for disabled secondary buttons (Clear filters, Sample data loaded).
    Only the opacity changes; size and position stay exactly the same. */
+/* A disabled .btn that is NOT .btn-primary (:not() excludes it); this matches the disabled prop passed from React state. */
 .btn:disabled:not(.btn-primary) {
+  /* Make it 55% opaque so it looks greyed out. */
   opacity: 0.55;
+/* Close the rule. */
 }

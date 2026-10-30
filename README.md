@@ -93,7 +93,7 @@ KitaKita/
 - **Deployed on Vercel**: (https://kita-kita-a8lv.vercel.app/)
 - **Deployed on Netlify**: (https://visionary-palmier-2f25d1.netlify.app)
 
-Both services redeploy automatically each time `main` is updated.
+Both services redeploy each time ' main ' is updated automatically.
 
 ## Use of Artificial Intelligence
 

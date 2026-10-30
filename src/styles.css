@@ -10,6 +10,18 @@
  * element looks: colours, fonts, spacing, layout, light/dark mode, buttons,
  * forms, lists, the chart, the auth screens and the budget/history tools.
  *
+ * THE COLOUR PALETTE (warm cream + amber)
+ * ---------------------------------------
+ * The whole app uses one warm palette so it stays easy on the eyes:
+ *   - Light mode: warm cream page, white cards, amber/orange accents.
+ *   - The main accent is an amber GRADIENT (--pri-grad) used on the active tab,
+ *     the primary buttons, the skip link and the checked checkbox. Text placed
+ *     on the amber is always DARK brown (--on-pri) because white text on light
+ *     amber would fail the WCAG contrast rule.
+ *   - Green (sales / positive) and red (expenses / negative) are kept on purpose
+ *     so money in and money out stay instantly readable.
+ *   - Tabs and primary buttons are fully rounded "pills" (--radius-pill).
+ *
  * WHERE IT FITS IN THE APPLICATION ARCHITECTURE
  * ---------------------------------------------
  *   main.jsx runs `import './styles.css'`. Vite injects the CSS into the page,
@@ -23,10 +35,11 @@
  *   Attribute selectors connect CSS to React props/state:
  *     [aria-current="page"]   <- App.jsx sets aria-current={tab === id ? 'page' : undefined},
  *                                so the ACTIVE tab (driven by the `tab` useState) gets
- *                                the highlighted look. State change -> re-render ->
+ *                                the amber gradient. State change -> re-render ->
  *                                attribute changes -> CSS restyles. No JS touches the CSS.
- *     [aria-pressed="true"], [aria-invalid="true"], [data-level="2"], :disabled
- *                             <- the same idea for toggles, errors, password strength, buttons.
+ *     [aria-pressed="true"], [aria-invalid="true"], [data-level="2"], :disabled, :checked
+ *                             <- the same idea for toggles, errors, password strength,
+ *                                buttons and checkboxes.
  *
  * PRIMARY CSS MECHANICS USED (be ready to explain these)
  * ------------------------------------------------------
@@ -35,10 +48,13 @@
  *     aria-* attributes set from state, and list rows produced by .map()
  *     (the .tx-list / .tx / .tips / .budget-entry styles style those repeated items).
  *   - CSS custom properties (variables) in :root, used with var(--name).
+ *     A variable can hold a whole gradient (--pri-grad), not only a colour.
  *   - Dark mode through @media (prefers-color-scheme: dark), which only
  *     redefines the variables.
  *   - Responsive design through @media (min-width / max-width) breakpoints.
  *   - Flexbox (display: flex) and CSS Grid (display: grid, grid-template-columns).
+ *   - A custom checkbox: appearance: none removes the browser's own look, then the
+ *     box is drawn with border/background and the tick comes from ::after.
  *   - Accessibility: skip link, :focus-visible ring, .sr-only, 44px touch
  *     targets, reduced-motion support, colour never used alone.
  *   - Cascade rules: later rules with the same specificity win; more specific
@@ -53,56 +69,63 @@
      2. Base                                     5. Utilities + motion
      3. Layout
    Change colours/spacing in section 1 only; components read the tokens.
+   Palette: warm cream + amber (light) and warm charcoal + soft amber (dark).
    Colour pairs were checked against WCAG 2.1 AA (4.5:1 text, 3:1 controls).
    ========================================================================== */
 
 /* 1. Design tokens ------------------------------------------------------- */
 /* :root targets the top-level <html> element, so variables defined here are available everywhere in the page. */
 :root {
-  /* Colour (light) */
-  /* Page background colour (very light grey). */
-  --bg: #f6f7f9;
+  /* Colour (light): warm cream + amber */
+  /* Page background colour (warm cream). */
+  --bg: #f3efe8;
   /* Background of cards and panels (white). */
   --card: #ffffff;
   /* Background of input fields (white in light mode). */
   --field: #ffffff;
-  /* Main text colour (near-black blue). */
-  --ink: #16202a;
-  /* Muted (secondary) text colour. */
-  --mut: #5b6577;
-  /* Light divider and border colour. */
-  --line: #e4e7ec;
+  /* Main text colour (near-black warm brown). */
+  --ink: #2b2118;
+  /* Muted (secondary) text colour (warm grey-brown). */
+  --mut: #6f6457;
+  /* Light warm divider and border colour. */
+  --line: #e8e0d3;
   /* Darker border for form controls so they meet the 3:1 contrast rule. */
-  --field-line: #818b9c;
+  --field-line: #8f8373;
 
-  /* Primary brand colour (teal) used for main buttons and the active tab. */
-  --pri: #0f766e;
-  /* Darker teal shown when hovering over a primary button. */
-  --pri-hover: #0b5e57;
-  /* Text colour placed on top of the primary colour (white). */
-  --on-pri: #ffffff;
-  /* Very light teal used for soft backgrounds. */
-  --pri-soft: #ccfbf1;
-  /* Teal used for coloured text such as links. */
-  --pri-text: #0b5e57;
+  /* Primary brand colour (amber orange) used as the solid accent colour (for example the fallback tip bar). */
+  --pri: #ff9a2e;
+  /* Darker amber used for the solid hover colour. */
+  --pri-hover: #f58a14;
+  /* Amber gradient (light to deeper amber, diagonal) used for the active tab, primary buttons, skip link and checked checkbox. */
+  --pri-grad: linear-gradient(135deg, #ffc15a, #ff9a2e);
+  /* Slightly deeper gradient shown when hovering over a primary button. */
+  --pri-grad-hover: linear-gradient(135deg, #ffb73d, #f58a14);
+  /* Text colour placed on top of the amber (dark brown: white would fail contrast). */
+  --on-pri: #2b1a05;
+  /* Very light amber/peach used for soft backgrounds. */
+  --pri-soft: #ffe9c7;
+  /* Deep amber-brown used for coloured text such as links (passes 4.5:1 on white). */
+  --pri-text: #9a5200;
+  /* Colour of the keyboard focus ring (darker amber so it is visible on white). */
+  --ring: #b86400;
 
   /* Red text/border colour for errors, negative numbers and expenses. */
   --red: #b42318;
-  /* Light red background that pairs with --red. */
-  --red-bg: #fee4e2;
+  /* Light warm red background that pairs with --red. */
+  --red-bg: #fde8e4;
   /* Green text colour for positive numbers, sales and success. */
   --grn: #067647;
-  /* Light green background that pairs with --grn. */
-  --grn-bg: #d1fadf;
+  /* Light warm green background that pairs with --grn. */
+  --grn-bg: #dff5e5;
   /* Amber (orange-brown) text colour for warnings. */
   --amb: #93370d;
   /* Light amber background that pairs with --amb. */
-  --amb-bg: #fef0c7;
+  --amb-bg: #fff0cc;
 
   /* Semi-transparent white used to draw diagonal stripes on expense bars. */
   --stripe: rgb(255 255 255 / 0.5); /* pattern on expense bars (not colour-only) */
-  /* Subtle drop shadow used on cards and stat tiles. */
-  --shadow: 0 1px 2px rgb(16 24 40 / 0.06);
+  /* Soft warm drop shadow used on cards and stat tiles. */
+  --shadow: 0 2px 6px rgb(60 40 10 / 0.08);
 
   /* Brand (same in both modes) */
   /* Black background of the "Kita Kita" logo box (same in light and dark mode). */
@@ -145,64 +168,14 @@
   --radius-md: 12px;
   /* Large corner radius (16px), used on cards. */
   --radius-lg: 16px;
+  /* Pill radius (fully rounded ends) used on tabs and primary buttons; set it to 12px for a squarer look. */
+  --radius-pill: 999px; /* tabs + main buttons; set to 12px for a squarer look */
   /* Minimum clickable/tappable size (44px) recommended for touch screens. */
   --tap: 44px; /* minimum touch target */
 
-  /* Tell the browser the page supports both light and dark, so native controls (date picker, select) match the theme. */
-  color-scheme: light dark; /* native date picker / select follow the theme */
+   /* Tell the browser the page uses the light theme only, so native controls (date picker, select dropdowns, scrollbars) are drawn light even when the user's device is set to dark mode. */
+  color-scheme: light; /* native date picker / select stay light */
 /* Close the :root rule. */
-}
-
-/* Apply the rules inside only when the user's operating system is set to dark mode. */
-@media (prefers-color-scheme: dark) {
-  /* Re-target :root so the same variable names get new, dark values. */
-  :root {
-    /* Dark page background. */
-    --bg: #0e1419;
-    /* Dark card background. */
-    --card: #18212a;
-    /* Dark input background. */
-    --field: #0e1419;
-    /* Light text for dark backgrounds. */
-    --ink: #e8edf2;
-    /* Muted text, lightened for dark mode. */
-    --mut: #9aa5b4;
-    /* Dark divider colour. */
-    --line: #2f3b48;
-    /* Input border colour for dark mode. */
-    --field-line: #627386;
-
-    /* Brighter teal so it stands out on dark backgrounds. */
-    --pri: #2dd4bf;
-    /* Even lighter teal for hover. */
-    --pri-hover: #5eead4;
-    /* Dark text placed on the bright teal. */
-    --on-pri: #06201d;
-    /* Dark teal soft background. */
-    --pri-soft: #123c39;
-    /* Light teal text colour. */
-    --pri-text: #5eead4;
-
-    /* Light red text for dark mode. */
-    --red: #fda29b;
-    /* Dark red background. */
-    --red-bg: #3b1a17;
-    /* Light green text for dark mode. */
-    --grn: #75e0a7;
-    /* Dark green background. */
-    --grn-bg: #0f3322;
-    /* Light amber text for dark mode. */
-    --amb: #fec84b;
-    /* Dark amber background. */
-    --amb-bg: #3a2a0a;
-
-    /* Dark semi-transparent stripes (white stripes would be too harsh on dark). */
-    --stripe: rgb(0 0 0 / 0.3);
-    /* No shadow in dark mode (shadows are barely visible on dark). */
-    --shadow: none;
-  /* Close the :root rule inside the media query. */
-  }
-/* Close the dark-mode media query. */
 }
 
 /* 2. Base ---------------------------------------------------------------- */
@@ -289,8 +262,8 @@ button {
 /* One consistent, high-visibility keyboard focus ring */
 /* :focus-visible matches only elements focused by keyboard (Tab), not by mouse click. */
 :focus-visible {
-  /* Draw a thick 3px solid outline in the primary colour. */
-  outline: 3px solid var(--pri);
+  /* Draw a thick 3px solid outline in the focus-ring colour (darker amber in light mode, light amber in dark mode). */
+  outline: 3px solid var(--ring);
   /* Push the outline 2px away from the element so it does not touch the border. */
   outline-offset: 2px;
 /* Close the focus rule. */
@@ -337,9 +310,9 @@ button {
   padding: var(--sp-2) var(--sp-4);
   /* Rounded corners. */
   border-radius: var(--radius-sm);
-  /* Primary colour background. */
-  background: var(--pri);
-  /* Text colour that contrasts with the primary colour. */
+  /* Amber gradient background. */
+  background: var(--pri-grad);
+  /* Dark text that contrasts with the amber. */
   color: var(--on-pri);
   /* Bold text. */
   font-weight: 700;
@@ -487,9 +460,11 @@ button {
   margin-top: var(--sp-4);
   /* Hide the border by making it transparent (keeps the size the same). */
   border-color: transparent;
-  /* Primary teal background. */
-  background: var(--pri);
-  /* Contrasting text colour. */
+  /* Fully rounded "pill" ends. */
+  border-radius: var(--radius-pill);
+  /* Amber gradient background (background, not background-color, because a gradient is an image). */
+  background: var(--pri-grad);
+  /* Dark text that contrasts with the amber. */
   color: var(--on-pri);
   /* Normal-sized text (larger than the default button text). */
   font-size: var(--fs-base);
@@ -499,8 +474,8 @@ button {
 }
 /* Hover state of the primary button. */
 .btn-primary:hover {
-  /* Darker teal (lighter in dark mode) on hover. */
-  background: var(--pri-hover);
+  /* Deeper amber gradient (lighter in dark mode) on hover. */
+  background: var(--pri-grad-hover);
 /* Close the rule. */
 }
 /* .btn-danger is used for destructive actions such as clearing data. */
@@ -535,8 +510,8 @@ button {
   background: var(--card);
   /* Thin divider-coloured border. */
   border: 1px solid var(--line);
-  /* Medium rounded corners. */
-  border-radius: var(--radius-md);
+  /* Fully rounded pill-shaped bar. */
+  border-radius: var(--radius-pill);
   /* Subtle shadow. */
   box-shadow: var(--shadow);
 /* Close the .tabs rule. */
@@ -549,8 +524,8 @@ button {
   min-height: var(--tap);
   /* Remove the default button border. */
   border: 0;
-  /* Rounded corners. */
-  border-radius: var(--radius-sm);
+  /* Fully rounded pill-shaped buttons. */
+  border-radius: var(--radius-pill);
   /* Transparent background for inactive tabs. */
   background: none;
   /* Muted text for inactive tabs. */
@@ -571,9 +546,9 @@ button {
 }
 /* Matches the tab whose aria-current attribute is "page": this is the active tab chosen by the `tab` state in App.jsx. */
 .tabs button[aria-current="page"] {
-  /* Solid teal background for the active tab. */
-  background: var(--pri);
-  /* Contrasting text colour. */
+  /* Amber gradient background for the active tab. */
+  background: var(--pri-grad);
+  /* Dark text that contrasts with the amber. */
   color: var(--on-pri);
 /* Close the rule. */
 }
@@ -830,8 +805,8 @@ select {
 }
 /* :focus-within is true when anything inside the wrapper (the input) has focus. */
 .amount-wrap:focus-within {
-  /* Draw the focus ring around the whole wrapper. */
-  outline: 3px solid var(--pri);
+  /* Draw the focus ring (amber) around the whole wrapper. */
+  outline: 3px solid var(--ring);
   /* Offset the ring by 2px. */
   outline-offset: 2px;
 /* Close the rule. */
@@ -1139,11 +1114,11 @@ select {
 .tip {
   /* 12px inner space. */
   padding: var(--sp-3);
-  /* Coloured left bar; uses --tip if defined, otherwise falls back to --pri. */
+  /* Coloured left bar; uses --tip if defined, otherwise falls back to the amber --pri. */
   border-left: 4px solid var(--tip, var(--pri));
   /* Rounded corners. */
   border-radius: var(--radius-sm);
-  /* Background uses --tip-bg if defined, otherwise the soft teal. */
+  /* Background uses --tip-bg if defined, otherwise the soft amber. */
   background: var(--tip-bg, var(--pri-soft));
   /* Small text. */
   font-size: var(--fs-sm);
@@ -1155,7 +1130,7 @@ select {
   display: block;
   /* 2px space below. */
   margin-bottom: 2px;
-  /* Use the tip colour, or fall back to teal text. */
+  /* Use the tip colour, or fall back to the amber text colour. */
   color: var(--tip, var(--pri-text));
   /* Extra-small text. */
   font-size: var(--fs-xs);
@@ -1358,7 +1333,7 @@ select {
   display: inline-block;
   /* 8px above and below to enlarge the click area. */
   padding: var(--sp-2) 0;
-  /* Teal link-like colour. */
+  /* Amber-brown link-like colour. */
   color: var(--pri-text);
   /* Semi-bold. */
   font-weight: 600;
@@ -1533,8 +1508,8 @@ select {
 .auth-benefits li::before {
   /* \2713 is the check mark character. */
   content: "\2713";
-  /* Green check mark. */
-  color: var(--grn);
+  /* Amber check mark that follows the accent colour. */
+  color: var(--pri-text);
   /* Extra-bold. */
   font-weight: 800;
 /* Close the rule. */
@@ -1612,9 +1587,9 @@ select {
 .auth-tabs button[aria-current="page"],
 /* Selector part 2: the active auth tab while hovered. */
 .auth-tabs button[aria-current="page"]:hover {
-  /* Keep the teal active background even on hover. */
-  background: var(--pri);
-  /* Contrasting text. */
+  /* Keep the amber gradient active background even on hover. */
+  background: var(--pri-grad);
+  /* Dark text that contrasts with the amber. */
   color: var(--on-pri);
 /* Close the rule. */
 }
@@ -1697,8 +1672,8 @@ input[type="checkbox"][aria-invalid="true"] {
 }
 /* Focus ring when the input inside has focus. */
 .pw-wrap:focus-within {
-  /* Teal ring around the whole wrapper. */
-  outline: 3px solid var(--pri);
+  /* Amber ring around the whole wrapper. */
+  outline: 3px solid var(--ring);
   /* Offset by 2px. */
   outline-offset: 2px;
 /* Close the rule. */
@@ -1777,8 +1752,15 @@ input[type="checkbox"][aria-invalid="true"] {
   cursor: pointer;
 /* Close the rule. */
 }
-/* The checkbox inside .check. */
+/* Custom box so it is visible even when unchecked */
+/* The checkbox inside .check, redrawn by hand. */
 .check input {
+  /* Remove the browser's own checkbox look so it can be styled from scratch. */
+  appearance: none;
+  /* CSS Grid is used only to centre the tick mark inside the box. */
+  display: grid;
+  /* Centre the tick horizontally and vertically. */
+  place-content: center;
   /* Do not grow or shrink. */
   flex: none;
   /* 22px wide. */
@@ -1791,8 +1773,34 @@ input[type="checkbox"][aria-invalid="true"] {
   margin: 0;
   /* Remove padding. */
   padding: 0;
-  /* Colour the checked checkbox with the primary teal. */
-  accent-color: var(--pri);
+  /* Visible border so the box can be seen even when unchecked. */
+  border: 2px solid var(--field-line);
+  /* Softly rounded square corners. */
+  border-radius: 6px;
+  /* Field background colour. */
+  background: var(--field);
+/* Close the rule. */
+}
+/* :checked matches the checkbox when it is ticked (this reads the checkbox's checked state from React). */
+.check input:checked {
+  /* Hide the border so the amber fill reaches the edge. */
+  border-color: transparent;
+  /* Fill the box with the amber gradient. */
+  background: var(--pri-grad);
+/* Close the rule. */
+}
+/* ::after on a checked box draws the tick mark inside it. */
+.check input:checked::after {
+  /* \2713 is the check mark character. */
+  content: "\2713";
+  /* Dark text colour so the tick contrasts with the amber. */
+  color: var(--on-pri);
+  /* Tick size. */
+  font-size: 14px;
+  /* Extra-bold so the tick is clear. */
+  font-weight: 800;
+  /* Line height of 1 keeps the tick centred. */
+  line-height: 1;
 /* Close the rule. */
 }
 /* .auth-row is the row holding "Remember me" and "Forgot password?". */
@@ -1835,7 +1843,7 @@ input[type="checkbox"][aria-invalid="true"] {
   border-radius: var(--radius-sm);
   /* Transparent background. */
   background: none;
-  /* Teal link colour. */
+  /* Amber-brown link colour. */
   color: var(--pri-text);
   /* Small text. */
   font-size: var(--fs-sm);
@@ -1849,7 +1857,7 @@ input[type="checkbox"][aria-invalid="true"] {
 }
 /* Hover state. */
 .link-btn:hover {
-  /* Soft teal background. */
+  /* Soft amber background. */
   background: var(--pri-soft);
 /* Close the rule. */
 }
@@ -1993,9 +2001,9 @@ input[type="checkbox"][aria-invalid="true"] {
   padding: 2px var(--sp-2);
   /* Rounded corners. */
   border-radius: var(--radius-sm);
-  /* Soft teal background. */
+  /* Soft amber background. */
   background: var(--pri-soft);
-  /* Teal text. */
+  /* Amber-brown text. */
   color: var(--pri-text);
   /* Extra-small text. */
   font-size: var(--fs-xs);
@@ -2013,10 +2021,10 @@ input[type="checkbox"][aria-invalid="true"] {
 }
 /* Selector part 1: the disabled primary button. */
 .btn-primary:disabled,
-/* Selector part 2: the disabled primary button on hover (to cancel the hover colour). */
+/* Selector part 2: the disabled primary button on hover (to cancel the hover gradient). */
 .btn-primary:disabled:hover {
-  /* Keep the normal teal. */
-  background: var(--pri);
+  /* Keep the normal amber gradient. */
+  background: var(--pri-grad);
   /* Make it 25% transparent to look disabled. */
   opacity: 0.75;
 /* Close the rule. */
